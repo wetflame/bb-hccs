@@ -31,8 +31,23 @@ import {
   takeShop,
   toString as toStringAsh,
   toEffect,
+  runCombat,
+  runChoice,
+  handlingChoice,
+  useFamiliar,
 } from 'kolmafia';
-import { $effect, $effects, $item, $skill } from 'libram';
+import {
+  $effect,
+  $effects,
+  $item,
+  $skill,
+  Macro,
+  $familiar,
+  $slot,
+  adventureMacroAuto,
+  $location,
+  get,
+} from 'libram';
 
 export function getPropertyInt(name: string) {
   const str = getProperty(name);
@@ -160,7 +175,10 @@ export function ensureMpSausage(mp: number) {
 export function sausageFightGuaranteed() {
   const goblinsFought = getPropertyInt('_sausageFights');
   const nextGuaranteed =
-    getPropertyInt('_lastSausageMonsterTurn') + 4 + goblinsFought * 3 + Math.max(0, goblinsFought - 5) ** 3;
+    getPropertyInt('_lastSausageMonsterTurn') +
+    4 +
+    goblinsFought * 3 +
+    Math.max(0, goblinsFought - 5) ** 3;
   return goblinsFought === 0 || totalTurnsPlayed() >= nextGuaranteed;
 }
 
@@ -226,21 +244,30 @@ export function ensureAsdonEffect(ef: Effect) {
 }
 
 export function mapMonster(location: Location, monster: Monster) {
-  if (
-    haveSkill($skill`Map the Monsters`) &&
-    !getPropertyBoolean('mappingMonsters') &&
-    getPropertyInt('_monstersMapped') < 3
-  ) {
-    useSkill($skill`Map the Monsters`);
-  }
+    if (
+      haveSkill($skill`Map the Monsters`) &&
+      !getPropertyBoolean('mappingMonsters') &&
+      getPropertyInt('_monstersMapped') < 3
+    ) {
+      useSkill($skill`Map the Monsters`);
+    }
 
-  if (!getPropertyBoolean('mappingMonsters')) throw 'Failed to setup Map the Monsters.';
+    if (!getPropertyBoolean('mappingMonsters')) throw 'Failed to setup Map the Monsters.';
 
-  const mapPage = visitUrl(toUrl(location), false, true);
-  if (!mapPage.includes('Leading Yourself Right to Them')) throw 'Something went wrong mapping.';
+    const mapPage = visitUrl(toUrl(location), false, true);
+    if (!mapPage.includes('Leading Yourself Right to Them')) throw 'Something went wrong mapping.';
 
-  const fightPage = visitUrl(`choice.php?pwd&whichchoice=1435&option=1&heyscriptswhatsupwinkwink=${monster.id}`);
-  if (!fightPage.includes(monster.name)) throw 'Something went wrong starting the fight.';
+    const fightPage = visitUrl(
+      `choice.php?pwd&whichchoice=1435&option=1&heyscriptswhatsupwinkwink=${monster.id}`
+    );
+    if (!fightPage.includes(monster.name)) throw 'Something went wrong starting the fight.';
+}
+
+export function mapAndSaberMonster(location: Location, monster: Monster) {
+  mapMonster(location, monster);
+
+  withMacro(Macro.skill($skill`use the force`), runCombat);
+  if (handlingChoice()) runChoice(3);
 }
 
 export function tryUse(quantity: number, it: Item) {
@@ -302,8 +329,10 @@ const songSlots = [
 ];
 const allKnownSongs = ([] as Effect[]).concat(...songSlots);
 const allSongs = Skill.all()
-  .filter(skill => toStringAsh((skill.class as unknown) as string) === 'Accordion Thief' && skill.buff)
-  .map(skill => toEffect(skill));
+  .filter(
+    (skill) => toStringAsh((skill.class as unknown) as string) === 'Accordion Thief' && skill.buff
+  )
+  .map((skill) => toEffect(skill));
 export function openSongSlot(song: Effect) {
   for (const songSlot of songSlots) {
     if (songSlot.includes(song)) {
@@ -336,4 +365,27 @@ export function ensureOde(turns: number) {
     openSongSlot($effect`Ode to Booze`);
     useSkill(1, $skill`The Ode to Booze`);
   }
+}
+
+export function withMacro<T>(macro: Macro, action: () => T) {
+  macro.save();
+  try {
+    return action();
+  } finally {
+    Macro.clearSaved();
+  }
+}
+
+export function adventureWithCarolGhost(location: Location) {
+  equip($item`familiar scrapbook`); // ensure no kramco, get scraps
+  if (get('_reflexHammerUsed') >= 3 && get('_chestXRayUsed') >= 3)
+    throw 'No free-kill for Carol Ghost!';
+  useFamiliar($familiar`Ghost of Crimbo Carols`);
+  equip($slot`acc3`, $item`Lil' Doctor™ Bag`);
+  adventureMacroAuto(
+    location,
+    Macro.externalIf(get('_reflexHammerUsed') < 3, Macro.skill($skill`Reflex Hammer`)).skill(
+      $skill`chest x-ray`
+    )
+  );
 }
