@@ -35,6 +35,7 @@ import {
   runChoice,
   handlingChoice,
   useFamiliar,
+  abort,
 } from 'kolmafia';
 import {
   $effect,
@@ -243,24 +244,34 @@ export function ensureAsdonEffect(ef: Effect) {
   ensureEffect(ef);
 }
 
+export function makePizza(...ingredients: Item[]) {
+  visitUrl(
+    `campground.php?action=makepizza&pizza=
+      ${toInt(ingredients[0])},
+      ${toInt(ingredients[1])},
+      ${toInt(ingredients[2])},
+      ${toInt(ingredients[3])}`
+  );
+}
+
 export function mapMonster(location: Location, monster: Monster) {
-    if (
-      haveSkill($skill`Map the Monsters`) &&
-      !getPropertyBoolean('mappingMonsters') &&
-      getPropertyInt('_monstersMapped') < 3
-    ) {
-      useSkill($skill`Map the Monsters`);
-    }
+  if (
+    haveSkill($skill`Map the Monsters`) &&
+    !getPropertyBoolean('mappingMonsters') &&
+    getPropertyInt('_monstersMapped') < 3
+  ) {
+    useSkill($skill`Map the Monsters`);
+  }
 
-    if (!getPropertyBoolean('mappingMonsters')) throw 'Failed to setup Map the Monsters.';
+  if (!getPropertyBoolean('mappingMonsters')) throw 'Failed to setup Map the Monsters.';
 
-    const mapPage = visitUrl(toUrl(location), false, true);
-    if (!mapPage.includes('Leading Yourself Right to Them')) throw 'Something went wrong mapping.';
+  const mapPage = visitUrl(toUrl(location), false, true);
+  if (!mapPage.includes('Leading Yourself Right to Them')) throw 'Something went wrong mapping.';
 
-    const fightPage = visitUrl(
-      `choice.php?pwd&whichchoice=1435&option=1&heyscriptswhatsupwinkwink=${monster.id}`
-    );
-    if (!fightPage.includes(monster.name)) throw 'Something went wrong starting the fight.';
+  const fightPage = visitUrl(
+    `choice.php?pwd&whichchoice=1435&option=1&heyscriptswhatsupwinkwink=${monster.id}`
+  );
+  if (!fightPage.includes(monster.name)) throw 'Something went wrong starting the fight.';
 }
 
 export function mapAndSaberMonster(location: Location, monster: Monster) {
@@ -377,6 +388,8 @@ export function withMacro<T>(macro: Macro, action: () => T) {
 }
 
 export function adventureWithCarolGhost(location: Location) {
+  if (haveEffect($effect`Feeling Lost`)) abort('Attempting to Carol Ghost while feeling lost');
+  
   equip($item`familiar scrapbook`); // ensure no kramco, get scraps
   if (get('_reflexHammerUsed') >= 3 && get('_chestXRayUsed') >= 3)
     throw 'No free-kill for Carol Ghost!';
