@@ -35,7 +35,6 @@ import {
   wait,
   chatPrivate,
   haveFamiliar,
-  userConfirm,
   abort,
   toInt,
   restoreHp,
@@ -46,8 +45,12 @@ import {
   familiarWeight,
   myFamiliar,
   weightAdjustment,
-  buy,
-  haveEquipped,
+  myFullness,
+  myInebriety,
+  mySpleenUse,
+  myMeat,
+  toSlot,
+  equippedItem,
 } from 'kolmafia';
 import {
   $familiar,
@@ -61,8 +64,6 @@ import {
   $monster,
   $class,
   get,
-  TunnelOfLove,
-  Witchess,
   Mood,
   Macro,
   adventureMacro,
@@ -89,12 +90,9 @@ import {
   ensureSong,
   adventureWithCarolGhost,
   mapAndSaberMonster,
-  mapMonster,
-  withMacro,
-  makePizza,
+  eatPizza,
 } from './lib';
 import { SynthesisPlanner } from './synthesis';
-import { COMBAT_MACROS } from './combat';
 
 enum Test {
   HP = 1,
@@ -120,12 +118,12 @@ const desiredTurns: turnsObject = {
   [Test.MUS]: 1,
   [Test.MYS]: 1,
   [Test.MOX]: 1,
-  [Test.ITEM]: 2,
-  [Test.WEAPON]: 21,
-  [Test.HOT_RES]: 21,
-  [Test.SPELL]: 42, // take into account simmering
+  [Test.ITEM]: 1,
+  [Test.WEAPON]: 17,
+  [Test.HOT_RES]: 14,
+  [Test.SPELL]: 43,
   [Test.NONCOMBAT]: 1,
-  [Test.FAMILIAR]: 47,
+  [Test.FAMILIAR]: 44,
   [Test.COIL_WIRE]: 60,
 };
 
@@ -177,7 +175,7 @@ const testTurnPredictions: predObject = {
   },
   [Test.SPELL]: () => {
     return (
-      61 - // take into account simmering
+      60 -
       Math.floor(numericModifier('spell damage') / 50 + 0.001) -
       Math.floor(numericModifier('spell damage percent') / 50 + 0.001)
     );
@@ -220,16 +218,6 @@ function doGuaranteedGoblin() {
   }
 }
 
-function defaultOutfit() {
-  equip($slot`shirt`, $item`fresh coat of paint`);
-  equip($item`weeping willow wand`);
-  equip($item`familiar scrapbook`);
-  equip($item`Cargo Cultist Shorts`);
-  equip($slot`acc1`, $item`Brutal brogues`);
-  equip($slot`acc2`, $item`hewn moon-rune spoon`);
-  equip($slot`acc3`, $item`backup camera`);
-}
-
 function testDone(testNum: number) {
   print(`Checking test ${testNum}...`);
   const text = visitUrl('council.php');
@@ -253,6 +241,13 @@ function doTest(testNum: Test) {
     if (!testDone(testNum)) {
       throw `Failed to do test ${Test[testNum]}. Maybe we are out of turns.`;
     }
+    print(
+      `${Test[testNum]} outfit: ` +
+        ['hat', 'back', 'weapon', 'off-hand', 'shirt', 'pants', 'acc1', 'acc2', 'acc3'].reduce(
+          (acc, cur) => acc + equippedItem(toSlot(cur)) + ',',
+          ''
+        )
+    );
     set('_hccsTestActual' + testNum, myTurncount() - turnsBeforeTest);
   } else {
     print(`Test ${testNum} already completed.`);
@@ -266,6 +261,8 @@ const synthesisPlanner = new SynthesisPlanner(
 );
 
 function setup() {
+  set('bb_ScriptStartCS', gametimeToInt());
+
   // Don't buy stuff from NPC stores.
   setProperty('_saved_autoSatisfyWithNPCs', getProperty('autoSatisfyWithNPCs'));
   setProperty('autoSatisfyWithNPCs', 'true');
@@ -276,6 +273,9 @@ function setup() {
 
   // Initialize council.
   visitUrl('council.php');
+
+  // manual visit to fireworks shop to allow purchases
+  visitUrl('clan_viplounge.php?action=fwshop');
 
   cliExecute('mood apathetic');
 
@@ -337,6 +337,8 @@ function setup() {
   if (!get('_floundryItemCreated')) {
     cliExecute('acquire fish hatchet');
   }
+
+  autosell(1, $item`Newbiesport™ tent`);
 }
 
 function getPizzaIngredients() {
@@ -358,17 +360,21 @@ function getPizzaIngredients() {
   adventureMacro(
     $location`The Haunted Kitchen`,
     Macro.step('mark start')
-      .if_('monstername possessed silverware drawer', Macro.trySkill('use the force'))
+      .if_('monstername "possessed silverware drawer"', Macro.trySkill('use the force'))
       .trySkill('CHEAT CODE: Replace Enemy')
       .step('goto start')
   );
   if (handlingChoice()) runChoice(3);
+  autosell(1, $item`corn holder`);
 
   // Saber tomato (reagent potion)
   mapAndSaberMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
 
   // Saber irate sombrero (DIF pizza)
   mapAndSaberMonster($location`South of The Border`, $monster`irate mariachi`);
+  autosell(1, $item`bottle of tequila`);
+  autosell(1, $item`half-sized guitar`);
+  autosell(1, $item`mariachi G-string`);
 
   // Cherry and grapefruit in skeleton store (Saber YR)
   if (getProperty('questM23Meatsmith') === 'unstarted') {
@@ -381,6 +387,9 @@ function getPizzaIngredients() {
     throw 'Something went wrong at skeleton store.';
   }
   mapAndSaberMonster($location`The Skeleton Store`, $monster`novelty tropical skeleton`);
+  autosell(availableAmount($item`lemon`), $item`lemon`);
+  autosell(availableAmount($item`orange`), $item`orange`);
+  autosell(availableAmount($item`strawberry`), $item`strawberry`);
 }
 
 function useStatGains() {
@@ -393,15 +402,15 @@ function useStatGains() {
     use($item`seal tooth`);
     use($item`volleyball`);
 
-    makePizza(
+    useFamiliar($familiar`Pocket Professor`);
+
+    eatPizza(
       $item`disco ball`,
       $item`irate sombrero`,
       $item`full meat tank`,
       $item`blood-faced volleyball`
     );
 
-    useFamiliar($familiar`Pocket Professor`);
-    eat($item`diabolic pizza`);
     availableAmount($item`Pocket Professor memory chip`) === 0 && abort("didn't get memory chip");
     equip($slot`familiar`, $item`Pocket Professor memory chip`);
   }
@@ -470,6 +479,12 @@ function buffBeforeGoblins() {
   ensurePotionEffect($effect`Tomato Power`, $item`tomato juice of powerful power`);
   ensurePotionEffect($effect`Mystically Oiled`, $item`ointment of the occult`);
 
+  autosell(
+    availableAmount($item`tomato juice of powerful power`),
+    $item`tomato juice of powerful power`
+  );
+  autosell(availableAmount($item`ointment of the occult`), $item`ointment of the occult`);
+
   // MAL pizza
   if (!haveEffect($effect`Mallowed Out`)) {
     // pull giant pearl to ensure 100 turns
@@ -479,14 +494,13 @@ function buffBeforeGoblins() {
       }
     }
 
-    useSkill($skill`Advanced Cocktailcrafting`); // get M and L for the MAL pizza
-    makePizza(
+    useSkill($skill`Advanced Cocktailcrafting`); // get M and L
+    eatPizza(
       $item`magical ice cubes`,
       $item`antique packet of ketchup`,
       $item`little paper umbrella`,
       $item`giant pearl`
     );
-    eat($item`diabolic pizza`);
   }
 
   ensureEffect($effect`Favored by Lyle`);
@@ -499,20 +513,22 @@ function buffBeforeGoblins() {
   ensureNpcEffect($effect`Glittering Eyelashes`, 5, $item`glittery mascara`);
   ensureEffect($effect`Hulkien`);
   ensurePullEffect($effect`Perspicacious Pressure`, $item`pressurized potion of perspicacity`);
-  // ensurePullEffect($effect`On the Shoulders of Giants`, $item`Hawking's Elixir of Brilliance`);
+  ensureEffect($effect`Lapdog`);
 
   // Plan is for these buffs to fall all the way through to item -> hot res -> fam weight.
   ensureEffect($effect`Fidoxene`);
   ensureEffect($effect`Billiards Belligerence`);
   haveBeachComb() && ensureEffect($effect`Do I Know You From Somewhere?`);
 
-  if (haveEffect($effect`Holiday Yoked`) === 0) {
-    adventureWithCarolGhost($location`Noob Cave`);
+  if (!haveEffect($effect`Holiday Yoked`)) {
+    adventureWithCarolGhost($effect`Holiday Yoked`);
   }
 
   // eat the sausage gotten earlier to restore MP
-  ensureCreateItem(1, $item`magical sausage`);
-  eat($item`magical sausage`);
+  if (myMp() < 100) {
+    ensureCreateItem(1, $item`magical sausage`);
+    eat($item`magical sausage`);
+  }
 
   if (haveSkill($skill`Love Mixology`)) {
     const lovePotion = $item`Love Potion #0`;
@@ -533,8 +549,11 @@ function buffBeforeGoblins() {
     }
   }
 
-  useSkill($skill`The Ode to Booze`);
-  cliExecute("drink Bee's Knees");
+  // if (!haveEffect($effect`On the Trolley`)) {
+  //   if (myMeat() < 500) abort("Don't have money for Bee's Knees.");
+  //   useSkill($skill`The Ode to Booze`);
+  //   cliExecute("drink Bee's Knees");
+  // }
 
   ensureEffect($effect`Blessing of your favorite Bird`); // Should be 75% myst for now.
   ensureSong($effect`Polka of Plenty`);
@@ -584,18 +603,23 @@ function doFreeFights() {
   equip($item`familiar scrapbook`);
 
   // kill the mushroom and chew mushroom tea
-  Macro.skill($skill`Barrage of Tears`)
-    .skill($skill`Spittoon Monsoon`)
-    .skill($skill`saucestorm`)
-    .repeat()
-    .setAutoAttack();
-  adv1($location`Your Mushroom Garden`);
-  setAutoAttack(0);
-  setChoice(1410, 2);
-  adv1($location`Your Mushroom Garden`);
-  use($item`free-range mushroom`);
-  ensureCreateItem(1, $item`mushroom tea`);
-  chew($item`mushroom tea`); // get Mush-Maw (+20 ML), 1 spleen
+  if (!get('_mushroomGardenVisited')) {
+    Macro.skill($skill`Barrage of Tears`)
+      .skill($skill`Spittoon Monsoon`)
+      .skill($skill`saucestorm`)
+      .repeat()
+      .setAutoAttack();
+    adv1($location`Your Mushroom Garden`);
+    setAutoAttack(0);
+    setChoice(1410, 2);
+    adv1($location`Your Mushroom Garden`);
+    use($item`free-range mushroom`);
+  }
+
+  if (!haveEffect($effect`Mush-Maw`)) {
+    ensureCreateItem(1, $item`mushroom tea`);
+    chew($item`mushroom tea`); // get Mush-Maw (+20 ML), 1 spleen
+  }
 
   // kill a Kramco to prep the back-up camera
   if (sausageFightGuaranteed()) {
@@ -702,6 +726,7 @@ function doMoxTest() {
   // ensureEffect($effect`Blubbered Up`);
   // ensureEffect($effect`Mariachi Mood`);
   ensureNpcEffect($effect`Butt-Rock Hair`, 5, $item`hair spray`);
+  tryUse(1, $item`Crimbo candied pecan`);
   if (haveEffect($effect`Unrunnable Face`) === 0) {
     tryUse(1, $item`runproof mascara`);
   }
@@ -732,6 +757,8 @@ function doMusTest() {
   haveFamiliar($familiar`Left-Hand Man`) && useFamiliar($familiar`Left-Hand Man`);
   maximize('muscle', false);
 
+  tryUse(1, $item`Crimbo peppermint bark`);
+
   // for (const increaser of [
   //   () => ensureEffect($effect`Ham-Fisted`),
   // ]) {
@@ -758,19 +785,18 @@ function doItemTest() {
 
   // Create CER pizza
   if (!haveEffect($effect`Certainty`)) {
-    visitUrl(
-      `campground.php?action=makepizza&pizza=
-      ${toInt($item`coconut shell`)},
-      ${toInt($item`eggbeater`)},
-      ${toInt($item`razor-sharp can lid`)},
-      ${toInt($item`Newbiesport™ tent`)}`
+    equip($slot`hat`, $item`none`);
+    ensureSewerItem(1, $item`ravioli hat`);
+    useFamiliar($familiar`Exotic Parrot`); // get that cracker
+    eatPizza(
+      $item`coconut shell`,
+      $item`eggbeater`,
+      $item`ravioli hat`,
+      $item`Pocket Professor memory chip` // get that cracker
     );
-    eat($item`diabolic pizza`);
-  }
 
-  // get weapon damage boost before feeling lost
-  if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
-    adventureWithCarolGhost($location`The Outskirts of Cobb's Knob`);
+    ensureItem(1, $item`cracker`);
+    equip($slot`familiar`, $item`cracker`);
   }
 
   !get('_clanFortuneBuffUsed') && cliExecute('fortune buff item');
@@ -781,6 +807,7 @@ function doItemTest() {
   ensureEffect($effect`Fat Leon's Phat Loot Lyric`);
   ensureEffect($effect`Steely-Eyed Squint`);
   ensureEffect($effect`Nearly All-Natural`); // bag of grain
+  ensureEffect($effect`Blessing of the Bird`);
   equip($item`Kramco Sausage-o-Matic™`);
 
   maximize(
@@ -801,47 +828,37 @@ function doFamiliarTest() {
   ensureEffect($effect`Fidoxene`);
   ensureEffect($effect`Billiards Belligerence`);
 
-  useFamiliar($familiar`Exotic Parrot`); // set any fam for Fidoxene boosts
+  useFamiliar($familiar`Exotic Parrot`); // have cracker
   maximize('familiar weight', false);
 
   doTest(Test.FAMILIAR);
 }
 
 function doWeaponTest() {
-  // fax and lick ungulith
-  if (availableAmount($item`photocopied monster`) === 0 && !get('_photocopyUsed')) {
-    chatPrivate('cheesefax', 'ungulith');
-    for (let i = 0; i < 2; i++) {
-      wait(10);
-      cliExecute('fax receive');
-      if (getProperty('photocopyMonster') === 'ungulith') break;
-      // otherwise got the wrong monster, put it back.
-      cliExecute('fax send');
-    }
-    if (availableAmount($item`photocopied monster`) === 0) throw 'Failed to fax in ungulith.';
-
+  // wish and freekill ungulith
+  if (!availableAmount($item`corrupted marrow`) && !haveEffect($effect`Cowrruption`)) {
     cliExecute('mood apathetic');
     Macro.skill($skill`shattering punch`).setAutoAttack();
-    use(1, $item`photocopied monster`);
+    cliExecute('genie monster ungulith');
+    runCombat();
     setAutoAttack(0);
   }
 
   // OU pizza (pulverize saucepan for useless powder)
   if (!haveEffect($effect`Outer Wolf™`)) {
+    cliExecute('refresh inventory');
     ensureItem(1, $item`tenderizing hammer`);
-    availableAmount($item`useless powder`) === 0 && cliExecute('pulverize saucepan');
-    visitUrl(
-      `campground.php?action=makepizza&pizza=
-      ${toInt($item`oil of expertise`)},
-      ${toInt($item`useless powder`)},
-      ${toInt($item`tomato juice of powerful power`)},
-      ${toInt($item`ointment of the occult`)}`
+    availableAmount($item`useless powder`) === 0 && cliExecute('pulverize old sweatpants');
+    eatPizza(
+      $item`oil of expertise`,
+      $item`useless powder`,
+      $item`scrumptious reagent`,
+      $item`scrumptious reagent`
     );
-    eat($item`diabolic pizza`);
   }
 
   if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
-    adventureWithCarolGhost($location`The Outskirts of Cobb's Knob`);
+    adventureWithCarolGhost($effect`Do You Crush What I Crush?`);
   }
 
   if (!haveEffect($effect`In a Lather`)) {
@@ -878,6 +895,8 @@ function doWeaponTest() {
     use($item`Yeg's Motel toothbrush`);
   }
 
+  eat(1, $item`glass of raw eggs`);
+
   maximize('weapon damage, weapon damage percent', false);
 
   doTest(Test.WEAPON);
@@ -893,7 +912,9 @@ function doSpellTest() {
   // ensureSong($effect`Jackasses' Symphony of Destruction`);
 
   // Pool buff
-  ensureEffect($effect`Mental A-cue-ity`);
+  if (get('_poolGames') < 3) {
+    ensureEffect($effect`Mental A-cue-ity`);
+  }
 
   // Tea party
   if (!getPropertyBoolean('_madTeaParty')) {
@@ -902,7 +923,7 @@ function doSpellTest() {
   }
 
   if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
-    adventureWithCarolGhost($location`The Outskirts of Cobb's Knob`);
+    adventureWithCarolGhost($effect`Do You Crush What I Crush?`);
   }
 
   useSkill(1, $skill`Spirit of Cayenne`);
@@ -952,6 +973,24 @@ function doSpellTest() {
 }
 
 function doHotResTest() {
+  // fax and lick factory worker
+  if (availableAmount($item`photocopied monster`) === 0 && !get('_photocopyUsed')) {
+    chatPrivate('cheesefax', 'factory worker');
+    for (let i = 0; i < 2; i++) {
+      wait(10);
+      cliExecute('fax receive');
+      if (getProperty('photocopyMonster') === 'factory worker') break;
+      // otherwise got the wrong monster, put it back.
+      cliExecute('fax send');
+    }
+    if (availableAmount($item`photocopied monster`) === 0) throw 'Failed to fax in factory worker.';
+
+    cliExecute('mood apathetic');
+    Macro.skill($skill`shocking lick`).setAutoAttack();
+    use(1, $item`photocopied monster`);
+    setAutoAttack(0);
+  }
+
   // Make sure no moon spoon.
   equip($slot`acc1`, $item`Eight Days a Week Pill Keeper`);
   equip($slot`acc2`, $item`Powerful Glove`);
@@ -962,6 +1001,10 @@ function doHotResTest() {
   cliExecute('smash * red-hot sausage fork');
   autosell(10, $item`hot nuggets`);
   autosell(10, $item`twinkly powder`);
+
+  // if (haveEffect($effect`Let It Snow/Boil/Stink/Frighten/Grease`) === 0) {
+  //   adventureWithCarolGhost($location`The Haunted Kitchen`);
+  // }
 
   if (availableAmount($item`hot powder`) > 0) {
     ensureEffect($effect`Flame-Retardant Trousers`);
@@ -983,11 +1026,7 @@ function doHotResTest() {
   ensureEffect($effect`Feeling Peaceful`);
   ensurePotionEffect($effect`Amazing`, $item`pocket maze`);
 
-  if (haveEffect($effect`Let It Snow/Boil/Stink/Frighten/Grease`) === 0) {
-    adventureWithCarolGhost($location`The Haunted Kitchen`);
-  }
-
-  ensurePullEffect($effect`Fireproof Lips`, $item`SPF 451 lip balm  `);
+  ensurePullEffect($effect`Fireproof Lips`, $item`SPF 451 lip balm`);
 
   if (!haveEffect($effect`Feeling No Pain`)) {
     useSkill($skill`The Ode to Booze`);
@@ -1018,7 +1057,6 @@ function doNonCombatTest() {
   ensureEffect($effect`The Sonata of Sneakiness`);
   ensureEffect($effect`Smooth Movements`);
   ensureEffect($effect`Invisible Avatar`);
-  ensureEffect($effect`Silent Running`);
   ensureEffect($effect`Feeling Lonely`);
 
   ensureEffect($effect`A Rose by Any Other Material`);
@@ -1032,8 +1070,7 @@ function doNonCombatTest() {
   doTest(Test.NONCOMBAT);
 }
 
-export function main(argString = '') {
-  const START_TIME = gametimeToInt();
+export function main() {
   setAutoAttack(0);
 
   if (myTurncount() < 60) {
@@ -1050,7 +1087,7 @@ export function main(argString = '') {
     buffBeforeGoblins();
   }
 
-  if (myLevel() < 12) {
+  if (myLevel() < 13) {
     doFreeFights();
     postGoblins();
   }
@@ -1079,16 +1116,18 @@ export function main(argString = '') {
     tryUse(1, $item`astral six-pack`);
     useSkill(2, $skill`The Ode to Booze`);
     drink(6, $item`astral pilsner`);
-    drink(1, $item`Cold One`);
-    eat(1, $item`bowl full of jelly`);
+  }
+
+  if (!testDone(Test.ITEM)) {
+    doItemTest();
   }
 
   if (!testDone(Test.FAMILIAR)) {
     doFamiliarTest();
   }
 
-  if (!testDone(Test.ITEM)) {
-    doItemTest();
+  if (!testDone(Test.HOT_RES)) {
+    doHotResTest();
   }
 
   if (!testDone(Test.WEAPON)) {
@@ -1099,16 +1138,27 @@ export function main(argString = '') {
     doSpellTest();
   }
 
-  if (!testDone(Test.HOT_RES)) {
-    doHotResTest();
-  }
-
   if (!testDone(Test.NONCOMBAT)) {
     doNonCombatTest();
   }
 
   if (!testDone(Test.DONATE)) {
     doTest(Test.DONATE);
+  }
+
+  let totalSeconds = (gametimeToInt() - getPropertyInt('bb_ScriptStartCS')) / 1000;
+  let min = Math.floor(totalSeconds % 60);
+  let sec = totalSeconds / 60;
+
+  print(`That only took ${min}:${sec.toFixed(2)} and ${myTurncount()} turns!`, 'green');
+  print(`Organ use: ${myFullness()}/${myInebriety()}/${mySpleenUse()}`, 'green');
+  for (let i = 1; i <= 10; i++) {
+    print(
+      `Test ${Test[i]} estimated turns: ${get('_hccsTestExpected' + i)} actual turns:${get(
+        '_hccsTestActual' + i
+      )} gated hardcoded value: ${desiredTurns[i]}`,
+      'blue'
+    );
   }
 
   setProperty('autoSatisfyWithNPCs', getProperty('_saved_autoSatisfyWithNPCs'));
@@ -1119,13 +1169,14 @@ export function main(argString = '') {
   cliExecute('ccs default');
   cliExecute('boombox food');
 
-  print(`Finished in ${(gametimeToInt() - START_TIME) / 1000} seconds.`, 'green');
-  for (let i = 1; i <= 11; i++) {
-    print(
-      `Test ${Test[i]} estimated turns: ${get('_hccsTestExpected' + i)} actual turns:${get(
-        '_hccsTestActual' + i
-      )}`,
-      'blue'
-    );
+  // Tune moon sign to Wombat (for meat farming).
+  if (!get('moonTuned')) {
+    // Unequip spoon.
+    equip($slot`acc1`, $item`Retrospecs`);
+    equip($slot`acc2`, $item`Powerful Glove`);
+    equip($slot`acc3`, $item`Lil' Doctor™ Bag`);
+
+    // Actually tune the moon.
+    visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
   }
 }

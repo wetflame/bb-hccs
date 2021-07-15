@@ -36,6 +36,7 @@ import {
   handlingChoice,
   useFamiliar,
   abort,
+  equippedItem,
 } from 'kolmafia';
 import {
   $effect,
@@ -244,14 +245,12 @@ export function ensureAsdonEffect(ef: Effect) {
   ensureEffect(ef);
 }
 
-export function makePizza(...ingredients: Item[]) {
-  visitUrl(
-    `campground.php?action=makepizza&pizza=
-      ${toInt(ingredients[0])},
-      ${toInt(ingredients[1])},
-      ${toInt(ingredients[2])},
-      ${toInt(ingredients[3])}`
-  );
+export function eatPizza(...ingredients: Item[]) {
+  let ingrs = ingredients.map((ingr) => toInt(ingr)).join();
+  visitUrl(`campground.php?action=makepizza&pizza=${ingrs}`);
+  ensureItem(1, $item`diabolic pizza`);
+  eat($item`diabolic pizza`);
+  cliExecute('refresh inventory');
 }
 
 export function mapMonster(location: Location, monster: Monster) {
@@ -387,10 +386,33 @@ export function withMacro<T>(macro: Macro, action: () => T) {
   }
 }
 
-export function adventureWithCarolGhost(location: Location) {
+export function adventureWithCarolGhost(effect: Effect) {
   if (haveEffect($effect`Feeling Lost`)) abort('Attempting to Carol Ghost while feeling lost');
-  
-  equip($item`familiar scrapbook`); // ensure no kramco, get scraps
+
+  if (
+    haveEffect($effect`Holiday Yoked`) ||
+    haveEffect($effect`Do You Crush What I Crush?`) ||
+    haveEffect($effect`Let It Snow/Boil/Stink/Frighten/Grease`)
+  ) {
+    abort('Attempting to Carol Ghost with previous effect active.');
+  }
+
+  let offHand = equippedItem($slot`off-hand`);
+  let location = $location`Noob Cave`;
+  equip($item`familiar scrapbook`); // ensure no kramco
+
+  switch (effect) {
+    case $effect`Holiday Yoked`:
+      break;
+    case $effect`Do You Crush What I Crush?`:
+      if (sausageFightGuaranteed()) {
+        equip($item`Kramco Sausage-o-Matic™`);
+      } else {
+        location = $location`The Outskirts of Cobb's Knob`;
+      }
+      break;
+  }
+
   if (get('_reflexHammerUsed') >= 3 && get('_chestXRayUsed') >= 3)
     throw 'No free-kill for Carol Ghost!';
   useFamiliar($familiar`Ghost of Crimbo Carols`);
@@ -401,4 +423,11 @@ export function adventureWithCarolGhost(location: Location) {
       $skill`chest x-ray`
     )
   );
+
+  equip(offHand);
+
+  // hit an NC or something, try again
+  if (!haveEffect(effect)) {
+      adventureWithCarolGhost(effect);
+  }
 }
