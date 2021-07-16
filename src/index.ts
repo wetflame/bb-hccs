@@ -50,7 +50,8 @@ import {
   mySpleenUse,
   myMeat,
   toSlot,
-  equippedItem,
+  equippedItem
+  userConfirm,,
 } from 'kolmafia';
 import {
   $familiar,
@@ -90,7 +91,8 @@ import {
   ensureSong,
   adventureWithCarolGhost,
   mapAndSaberMonster,
-  eatPizza,
+  eatPizza
+  setPropertyInt,,
 } from './lib';
 import { SynthesisPlanner } from './synthesis';
 
@@ -119,9 +121,9 @@ const desiredTurns: turnsObject = {
   [Test.MYS]: 1,
   [Test.MOX]: 1,
   [Test.ITEM]: 1,
-  [Test.WEAPON]: 17,
-  [Test.HOT_RES]: 14,
-  [Test.SPELL]: 43,
+  [Test.WEAPON]: 15,
+  [Test.HOT_RES]: 12,
+  [Test.SPELL]: 41,
   [Test.NONCOMBAT]: 1,
   [Test.FAMILIAR]: 44,
   [Test.COIL_WIRE]: 60,
@@ -261,7 +263,7 @@ const synthesisPlanner = new SynthesisPlanner(
 );
 
 function setup() {
-  set('bb_ScriptStartCS', gametimeToInt());
+  setPropertyInt('bb_ScriptStartCS', gametimeToInt());
 
   // Don't buy stuff from NPC stores.
   setProperty('_saved_autoSatisfyWithNPCs', getProperty('autoSatisfyWithNPCs'));
@@ -846,9 +848,9 @@ function doWeaponTest() {
 
   // OU pizza (pulverize saucepan for useless powder)
   if (!haveEffect($effect`Outer Wolf™`)) {
-    cliExecute('refresh inventory');
     ensureItem(1, $item`tenderizing hammer`);
-    availableAmount($item`useless powder`) === 0 && cliExecute('pulverize old sweatpants');
+    ensureItem(1, $item`cool whip`);
+    availableAmount($item`useless powder`) === 0 && cliExecute('pulverize cool whip');
     eatPizza(
       $item`oil of expertise`,
       $item`useless powder`,
@@ -1066,6 +1068,7 @@ function doNonCombatTest() {
 
   // cliExecute('acquire porkpie-mounted popper');
   // equip($item`porkpie-mounted popper`);
+  equip($slot`acc1`, $item`hewn moon-rune spoon`);
 
   doTest(Test.NONCOMBAT);
 }
@@ -1142,10 +1145,6 @@ export function main() {
     doNonCombatTest();
   }
 
-  if (!testDone(Test.DONATE)) {
-    doTest(Test.DONATE);
-  }
-
   let totalSeconds = (gametimeToInt() - getPropertyInt('bb_ScriptStartCS')) / 1000;
   let min = Math.floor(totalSeconds % 60);
   let sec = totalSeconds / 60;
@@ -1159,6 +1158,15 @@ export function main() {
       )} gated hardcoded value: ${desiredTurns[i]}`,
       'blue'
     );
+  }
+
+
+  if (userConfirm('Tests done. Stop before donating?', 15000, false)) {
+      return;
+  }
+
+  if (!testDone(Test.DONATE)) {
+    doTest(Test.DONATE);
   }
 
   setProperty('autoSatisfyWithNPCs', getProperty('_saved_autoSatisfyWithNPCs'));
