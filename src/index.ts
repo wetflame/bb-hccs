@@ -50,8 +50,8 @@ import {
   mySpleenUse,
   myMeat,
   toSlot,
-  equippedItem
-  userConfirm,,
+  equippedItem,
+  userConfirm,
 } from 'kolmafia';
 import {
   $familiar,
@@ -91,8 +91,8 @@ import {
   ensureSong,
   adventureWithCarolGhost,
   mapAndSaberMonster,
-  eatPizza
-  setPropertyInt,,
+  eatPizza,
+  setPropertyInt,
 } from './lib';
 import { SynthesisPlanner } from './synthesis';
 
@@ -586,7 +586,6 @@ function doFreeFights() {
   // mood.skill($skill`Get Big`);
   // mood.skill($skill`Blood Bond`);
   // mood.skill($skill`Blood Bubble`);
-  // haveSkill($skill`Carol of the Hells`) && mood.skill($skill`Carol of the Hells`);
   // mood.skill($skill`Drescher's Annoying Noise`);
   // mood.skill($skill`Elemental Saucesphere`);
   // mood.skill($skill`Empathy`);
@@ -878,7 +877,7 @@ function doWeaponTest() {
 
   if (availableAmount($item`LOV Elixir #3`) > 0) ensureEffect($effect`The Power of LOV`);
 
-  // ensureEffect($effect`Carol of the Bulls`);
+  ensureEffect($effect`Carol of the Bulls`);
   ensureEffect($effect`Song of the North`);
   // ensureEffect($effect`Rage of the Reindeer`);
   // ensureEffect($effect`Frenzied, Bloody`);
@@ -909,7 +908,7 @@ function doSpellTest() {
 
   ensureEffect($effect`Song of Sauce`);
   ensureEffect($effect`AAA-Charged`);
-  // ensureEffect($effect`Carol of the Hells`);
+  ensureEffect($effect`Carol of the Hells`);
   // ensureEffect($effect`Arched Eyebrow of the Archmage`);
   // ensureSong($effect`Jackasses' Symphony of Destruction`);
 
