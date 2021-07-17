@@ -642,7 +642,7 @@ function doFreeFights() {
   while (get('_backUpUses') < 10) {
     upkeepHpAndMp();
 
-    adventureMacro(
+    adventureMacroAuto(
       $location`The Dire Warren`,
       Macro.skill($skill`back-up to your last enemy`)
         .if_('!monstername "sausage goblin"', new Macro().step('abort'))
@@ -653,6 +653,7 @@ function doFreeFights() {
     );
   }
 
+  setAutoAttack(0);
   restoreHp(myMaxhp());
 
   // Professor chain off the last back-up
@@ -842,6 +843,7 @@ function doWeaponTest() {
     Macro.skill($skill`shattering punch`).setAutoAttack();
     cliExecute('genie monster ungulith');
     runCombat();
+    wait(3);
     setAutoAttack(0);
   }
 
@@ -1145,9 +1147,10 @@ export function main() {
   }
 
   let totalSeconds = (gametimeToInt() - getPropertyInt('bb_ScriptStartCS')) / 1000;
-  let min = Math.floor(totalSeconds % 60);
-  let sec = totalSeconds / 60;
+  let min = Math.floor(totalSeconds / 60);
+  let sec = totalSeconds % 60;
 
+  print(`Total seconds for sanity check: ${totalSeconds}`);
   print(`That only took ${min}:${sec.toFixed(2)} and ${myTurncount()} turns!`, 'green');
   print(`Organ use: ${myFullness()}/${myInebriety()}/${mySpleenUse()}`, 'green');
   for (let i = 1; i <= 10; i++) {
