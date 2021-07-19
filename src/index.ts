@@ -837,14 +837,8 @@ function doFamiliarTest() {
 }
 
 function doWeaponTest() {
-  // wish and freekill ungulith
-  if (!availableAmount($item`corrupted marrow`) && !haveEffect($effect`Cowrruption`)) {
-    cliExecute('mood apathetic');
-    Macro.skill($skill`shattering punch`).setAutoAttack();
-    cliExecute('genie monster ungulith');
-    runCombat();
-    wait(3);
-    setAutoAttack(0);
+  if (!haveEffect($effect`Cowrruption`)) {
+    wishEffect($effect`Cowrruption`);
   }
 
   // OU pizza (pulverize saucepan for useless powder)
@@ -1105,12 +1099,12 @@ export function main() {
     doHpTest();
   }
 
-  if (!testDone(Test.MOX)) {
-    doMoxTest();
-  }
-
   if (!testDone(Test.MUS)) {
     doMusTest();
+  }
+
+  if (!testDone(Test.MOX)) {
+    doMoxTest();
   }
 
   if (
