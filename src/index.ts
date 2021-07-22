@@ -122,7 +122,7 @@ const desiredTurns: turnsObject = {
   [Test.MOX]: 1,
   [Test.ITEM]: 1,
   [Test.WEAPON]: 15,
-  [Test.HOT_RES]: 12,
+  [Test.HOT_RES]: 13,
   [Test.SPELL]: 41,
   [Test.NONCOMBAT]: 1,
   [Test.FAMILIAR]: 44,
@@ -568,7 +568,7 @@ function doFreeFights() {
   equip($item`weeping willow wand`);
   equip($item`familiar scrapbook`);
   equip($item`Cargo Cultist Shorts`);
-  equip($slot`acc1`, $item`hewn moon-rune spoon`);
+  equip($slot`acc2`, $item`hewn moon-rune spoon`);
   equip($slot`acc2`, $item`Retrospecs`);
   equip($slot`acc3`, $item`backup camera`);
 
@@ -810,12 +810,14 @@ function doItemTest() {
   ensureEffect($effect`Steely-Eyed Squint`);
   ensureEffect($effect`Nearly All-Natural`); // bag of grain
   ensureEffect($effect`Blessing of the Bird`);
+
+  equip($item`oversized sparkler`);
   equip($item`Kramco Sausage-o-Matic™`);
 
-  maximize(
-    'item, 2 booze drop, -equip broken champagne bottle, -equip surprisingly capacious handbag',
-    false
-  );
+  // maximize(
+  //   'item, 2 booze drop, -equip broken champagne bottle, -equip surprisingly capacious handbag',
+  //   false
+  // );
 
   doTest(Test.ITEM);
 }
@@ -830,8 +832,12 @@ function doFamiliarTest() {
   ensureEffect($effect`Fidoxene`);
   ensureEffect($effect`Billiards Belligerence`);
 
-  useFamiliar($familiar`Exotic Parrot`); // have cracker
-  maximize('familiar weight', false);
+  useFamiliar($familiar`Exotic Parrot`);
+  equip($item`Fourth of May Cosplay Saber`);
+  equip($item`familiar scrapbook`);
+  equip($slot`acc2`, $item`hewn moon-rune spoon`);
+  equip($slot`familiar`, $item`cracker`);
+  // maximize('familiar weight', false);
 
   doTest(Test.FAMILIAR);
 }
@@ -894,7 +900,11 @@ function doWeaponTest() {
 
   eat(1, $item`glass of raw eggs`);
 
-  maximize('weapon damage, weapon damage percent', false);
+  equip($item`fish hatchet`);
+  equip($item`astral trousers`);
+  equip($slot`acc1`, $item`Powerful Glove`);
+
+  // maximize('weapon damage, weapon damage percent', false);
 
   doTest(Test.WEAPON);
 }
@@ -959,7 +969,11 @@ function doSpellTest() {
     useSkill(1, $skill`Deep Dark Visions`);
   }
 
-  maximize('spell damage', false);
+  equip($item`weeping willow wand`);
+  equip($slot`acc1`, $item`Powerful Glove`);
+  equip($slot`acc2`, $item`hewn moon-rune spoon`);
+  availableAmount($item`psychic's amulet`) > 0 && equip($slot`acc3`, $item`psychic's amulet`);
+  // maximize('spell damage', false);
 
   if (Math.round(numericModifier('spell damage percent')) % 50 >= 40) {
     ensureItem(1, $item`soda water`);
@@ -1033,9 +1047,15 @@ function doHotResTest() {
   useFamiliar($familiar`Exotic Parrot`);
 
   cliExecute('retrocape vampire hold');
+  equip($item`Fourth of May Cosplay Saber`);
+  equip($item`unwrapped knock-off retro superhero cape`);
+  equip($item`lava-proof pants`);
+  equip($item`heat-resistant gloves`);
+  availableAmount($item`psychic's amulet`) >0 &&  equip($item`psychic's amulet`);
+  equip($slot`familiar`, $item`cracker`);
 
   // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
-  maximize('hot res, 0.01 familiar weight', false);
+  // maximize('hot res, 0.01 familiar weight', false);
 
   doTest(Test.HOT_RES);
 }
@@ -1048,14 +1068,11 @@ function doNonCombatTest() {
   ensureEffect($effect`Leash of Linguini`);
   ensureEffect($effect`Empathy`);
 
-  equip($slot`acc3`, $item`Powerful Glove`);
-  equip($item`fish hatchet`);
 
   ensureEffect($effect`The Sonata of Sneakiness`);
   ensureEffect($effect`Smooth Movements`);
   ensureEffect($effect`Invisible Avatar`);
   ensureEffect($effect`Feeling Lonely`);
-
   ensureEffect($effect`A Rose by Any Other Material`);
   ensureEffect($effect`Throwing Some Shade`);
 
@@ -1063,7 +1080,8 @@ function doNonCombatTest() {
 
   // cliExecute('acquire porkpie-mounted popper');
   // equip($item`porkpie-mounted popper`);
-  equip($slot`acc1`, $item`hewn moon-rune spoon`);
+  equip($item`fish hatchet`);
+  equip($slot`acc2`, $item`hewn moon-rune spoon`);
 
   doTest(Test.NONCOMBAT);
 }
@@ -1157,7 +1175,7 @@ export function main() {
   }
 
 
-  if (userConfirm('Tests done. Stop before donating?', 15000, false)) {
+  if (userConfirm('Tests done. Stop before donating? (To check maximize outfits)', 15000, false)) {
       return;
   }
 
@@ -1172,6 +1190,7 @@ export function main() {
   cliExecute('mood default');
   cliExecute('ccs default');
   cliExecute('boombox food');
+  cliExecute('refresh all');
 
   // Tune moon sign to Wombat (for meat farming).
   if (!get('moonTuned')) {
