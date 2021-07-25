@@ -196,10 +196,6 @@ function upkeepHpAndMp() {
   }
 }
 
-function haveBeachComb() {
-  return availableAmount($item`Beach Comb`) > 0;
-}
-
 function useDefaultFamiliar() {
   useFamiliar(defaultFamiliar);
   if (defaultFamiliarEquipment !== $item`none` && availableAmount(defaultFamiliarEquipment) > 0) {
@@ -510,7 +506,6 @@ function buffBeforeGoblins() {
   ensureEffect($effect`Triple-Sized`);
   ensureEffect($effect`Feeling Excited`);
   ensureEffect($effect`Uncucumbered`); // boxing daycare
-  haveBeachComb() && ensureEffect($effect`We're All Made of Starfish`); // Beach Comb - should bridge all the way to spell dmg.
   ensureSong($effect`The Magical Mojomuscular Melody`);
   ensureNpcEffect($effect`Glittering Eyelashes`, 5, $item`glittery mascara`);
   ensureEffect($effect`Hulkien`);
@@ -520,7 +515,8 @@ function buffBeforeGoblins() {
   // Plan is for these buffs to fall all the way through to item -> hot res -> fam weight.
   ensureEffect($effect`Fidoxene`);
   ensureEffect($effect`Billiards Belligerence`);
-  haveBeachComb() && ensureEffect($effect`Do I Know You From Somewhere?`);
+  ensureEffect($effect`Do I Know You From Somewhere?`);
+  ensureEffect($effect`You Learned Something Maybe!`);
 
   if (!haveEffect($effect`Holiday Yoked`)) {
     adventureWithCarolGhost($effect`Holiday Yoked`);
@@ -568,8 +564,8 @@ function doFreeFights() {
   equip($item`weeping willow wand`);
   equip($item`familiar scrapbook`);
   equip($item`Cargo Cultist Shorts`);
+  equip($slot`acc1`, $item`Retrospecs`);
   equip($slot`acc2`, $item`hewn moon-rune spoon`);
-  equip($slot`acc2`, $item`Retrospecs`);
   equip($slot`acc3`, $item`backup camera`);
 
   useFamiliar($familiar`Hovering Sombrero`);
@@ -632,7 +628,7 @@ function doFreeFights() {
         .skill($skill`Spittoon Monsoon`)
         .skill($skill`saucestorm`)
     );
-  } else {
+  } else if (get('lastCopyableMonster') !== $monster`sausage goblin`) {
     abort('Kramco not ready to start back-up chain');
   }
 
@@ -836,6 +832,7 @@ function doFamiliarTest() {
   equip($item`Fourth of May Cosplay Saber`);
   equip($item`familiar scrapbook`);
   equip($slot`acc2`, $item`hewn moon-rune spoon`);
+  equip($slot`acc3`, $item`Beach Comb`);
   equip($slot`familiar`, $item`cracker`);
   // maximize('familiar weight', false);
 
@@ -890,6 +887,7 @@ function doWeaponTest() {
   ensureEffect($effect`Billiards Belligerence`);
   // ensureNpcEffect($effect`Engorged Weapon`, 1, $item`Meleegra&trade; pills`); Gnome camp
   ensureEffect($effect`Cowrruption`); // Corrupted marrow
+  ensureEffect($effect`Lack of Body-Building`);
   ensureEffect($effect`Bow-Legged Swagger`);
 
   cliExecute('boombox fists');
@@ -939,6 +937,7 @@ function doSpellTest() {
 
   ensureEffect($effect`Elemental Saucesphere`);
   ensureEffect($effect`Astral Shell`);
+  ensureEffect($effect`We're All Made of Starfish`);
   if (haveEffect($effect`Feeling Peaceful`) === 0) useSkill($skill`Feel Peaceful`);
 
   // Deep Dark Visions
@@ -975,10 +974,10 @@ function doSpellTest() {
   availableAmount($item`psychic's amulet`) > 0 && equip($slot`acc3`, $item`psychic's amulet`);
   // maximize('spell damage', false);
 
-  if (Math.round(numericModifier('spell damage percent')) % 50 >= 40) {
-    ensureItem(1, $item`soda water`);
-    ensurePotionEffect($effect`Concentration`, $item`cordial of concentration`);
-  }
+  // if (Math.round(numericModifier('spell damage percent')) % 50 >= 40) {
+  //   ensureItem(1, $item`soda water`);
+  //   ensurePotionEffect($effect`Concentration`, $item`cordial of concentration`);
+  // }
 
   doTest(Test.SPELL);
 }
@@ -1035,6 +1034,7 @@ function doHotResTest() {
   ensureEffect($effect`Leash of Linguini`);
   ensureEffect($effect`Empathy`);
   ensureEffect($effect`Feeling Peaceful`);
+  ensureEffect($effect`Hot-Headed`);
   ensurePotionEffect($effect`Amazing`, $item`pocket maze`);
 
   ensurePullEffect($effect`Fireproof Lips`, $item`SPF 451 lip balm`);
@@ -1050,8 +1050,8 @@ function doHotResTest() {
   equip($item`Fourth of May Cosplay Saber`);
   equip($item`unwrapped knock-off retro superhero cape`);
   equip($item`lava-proof pants`);
-  equip($item`heat-resistant gloves`);
-  availableAmount($item`psychic's amulet`) >0 &&  equip($item`psychic's amulet`);
+  equip($slot`acc3`, $item`heat-resistant gloves`);
+  availableAmount($item`psychic's amulet`) > 0 && equip($item`psychic's amulet`);
   equip($slot`familiar`, $item`cracker`);
 
   // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
@@ -1067,7 +1067,6 @@ function doNonCombatTest() {
   ensureEffect($effect`Blood Bond`);
   ensureEffect($effect`Leash of Linguini`);
   ensureEffect($effect`Empathy`);
-
 
   ensureEffect($effect`The Sonata of Sneakiness`);
   ensureEffect($effect`Smooth Movements`);
@@ -1174,9 +1173,8 @@ export function main() {
     );
   }
 
-
   if (userConfirm('Tests done. Stop before donating? (To check maximize outfits)', 15000, false)) {
-      return;
+    return;
   }
 
   if (!testDone(Test.DONATE)) {
