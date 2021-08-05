@@ -411,6 +411,9 @@ export function adventureWithCarolGhost(effect: Effect) {
         location = $location`The Outskirts of Cobb's Knob`;
       }
       break;
+    case $effect`Let It Snow/Boil/Stink/Frighten/Grease`:
+      location = $location`The Haunted Kitchen`;
+      break;
   }
 
   if (get('_reflexHammerUsed') >= 3 && get('_chestXRayUsed') >= 3)
@@ -428,6 +431,6 @@ export function adventureWithCarolGhost(effect: Effect) {
 
   // hit an NC or something, try again
   if (!haveEffect(effect)) {
-      adventureWithCarolGhost(effect);
+    adventureWithCarolGhost(effect);
   }
 }
