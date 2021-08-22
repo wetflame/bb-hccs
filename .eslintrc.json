@@ -1,5 +1,7 @@
 {
-  "extends": ["eslint:recommended"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "libram"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   "rules": {
     "block-scoped-var": "error",
     "eqeqeq": "error",
@@ -17,7 +19,8 @@
       }
     ],
     "curly": ["error", "multi-line"],
-    "node/no-unpublished-import": "off"
+    "node/no-unpublished-import": "off",
+    "libram/verify-constants": "error"
   },
   "parserOptions": {
     "ecmaVersion": 2020,
