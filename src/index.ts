@@ -18,6 +18,7 @@ import {
     haveEffect,
     haveFamiliar,
     haveSkill,
+    inMultiFight,
     maximize,
     myAdventures,
     myBasestat,
@@ -37,6 +38,7 @@ import {
     putShop,
     restoreHp,
     runChoice,
+    runCombat,
     setAutoAttack,
     setProperty,
     toInt,
@@ -78,6 +80,7 @@ import {
     getPropertyBoolean,
     getPropertyInt,
     mapAndSaberMonster,
+    myFamiliarWeight,
     pullIfPossible,
     sausageFightGuaranteed,
     setChoice,
@@ -287,13 +290,13 @@ function setup() {
         }
     }
 
-    cliExecute('boombox fists');
+    // cliExecute('boombox fists');
     cliExecute('mcd 10');
 
     ensureItem(1, $item`toy accordion`);
 
     // lathe wand
-    visitUrl('shop.php?whichshop=lathe&action=buyitem&quantity=1&whichrow=1162&pwd');
+    // visitUrl('shop.php?whichshop=lathe&action=buyitem&quantity=1&whichrow=1162&pwd');
 
     if (!get('_floundryItemCreated')) {
         cliExecute('acquire fish hatchet');
@@ -375,15 +378,15 @@ function useStatGains() {
 
     equip($item`familiar scrapbook`); // make use of exp boosts
 
-    if (Math.round(numericModifier('mysticality experience percent')) < 125) {
-        throw 'Insufficient +stat%.';
-    }
+    // if (Math.round(numericModifier('mysticality experience percent')) < 125) {
+    //     throw 'Insufficient +stat%.';
+    // }
 
     // Use ten-percent bonus
     tryUse(1, $item`a ten-percent bonus`);
 
     // Scavenge for gym equipment
-    if (!get('_hccsMinRealTime') && toInt(get('_daycareGymScavenges')) < 1) {
+    if (toInt(get('_daycareGymScavenges')) < 1) {
         visitUrl('/place.php?whichplace=town_wrong&action=townwrong_boxingdaycare');
         const pg = runChoice(3);
         if (containsText(pg, '[free]')) runChoice(2);
@@ -443,9 +446,9 @@ function buffBeforeGoblins() {
     ensureEffect($effect`Do I Know You From Somewhere?`);
     ensureEffect($effect`You Learned Something Maybe!`);
 
-    if (!haveEffect($effect`Holiday Yoked`)) {
-        adventureWithCarolGhost($effect`Holiday Yoked`);
-    }
+    // if (!haveEffect($effect`Holiday Yoked`)) {
+    //     adventureWithCarolGhost($effect`Holiday Yoked`);
+    // }
 
     // eat the sausage gotten earlier to restore MP
     if (myMp() < 100) {
@@ -481,7 +484,8 @@ function doFreeFights() {
     cliExecute('fold makeshift garbage shirt');
     equip($item`makeshift garbage shirt`);
     equip($item`unwrapped knock-off retro superhero cape`);
-    equip($item`weeping willow wand`);
+    // equip($item`weeping willow wand`);
+    equip($item`Fourth of May Cosplay Saber`);
     equip($item`familiar scrapbook`);
     equip($item`Cargo Cultist Shorts`);
     equip($slot`acc1`, $item`Beach Comb`);
@@ -489,32 +493,32 @@ function doFreeFights() {
     equip($slot`acc3`, $item`backup camera`);
 
     useFamiliar($familiar`Hovering Sombrero`);
-    equip($slot`familiar`, $item`miniature crystal ball`);
+    // equip($slot`familiar`, $item`miniature crystal ball`);
 
     // Get buff things
     ensureSewerItem(1, $item`turtle totem`);
     ensureSewerItem(1, $item`saucepan`);
 
     upkeepHpAndMp();
-    cliExecute('mood cs');
-    cliExecute('mood execute');
-    // const mood = new Mood();
-    // mood.skill($skill`Astral Shell`);
-    // mood.skill($skill`Get Big`);
-    // mood.skill($skill`Blood Bond`);
-    // mood.skill($skill`Blood Bubble`);
-    // mood.skill($skill`Drescher's Annoying Noise`);
-    // mood.skill($skill`Elemental Saucesphere`);
-    // mood.skill($skill`Empathy`);
-    // mood.skill($skill`Inscrutable Gaze`);
-    // mood.skill($skill`Leash of Linguini`);
-    // mood.skill($skill`Pride of the Puffin`);
-    // mood.skill($skill`Singer's Faithful Ocelot`);
-    // haveSkill($skill`Stevedave's Shanty of Superiority`) &&
-    //   mood.skill($skill`Stevedave's Shanty of Superiority`);
-    // mood.skill($skill`Ur-Kel's Aria of Annoyance`);
-    // mood.skill($skill`Feel Excitement`);
-    // mood.execute();
+    // cliExecute('mood cs');
+    // cliExecute('mood execute');
+    const mood = new Mood();
+    mood.skill($skill`Astral Shell`);
+    mood.skill($skill`Get Big`);
+    mood.skill($skill`Blood Bond`);
+    mood.skill($skill`Blood Bubble`);
+    mood.skill($skill`Drescher's Annoying Noise`);
+    mood.skill($skill`Elemental Saucesphere`);
+    mood.skill($skill`Empathy of the Newt`);
+    mood.skill($skill`Inscrutable Gaze`);
+    mood.skill($skill`Leash of Linguini`);
+    mood.skill($skill`Pride of the Puffin`);
+    mood.skill($skill`Singer's Faithful Ocelot`);
+    haveSkill($skill`Stevedave's Shanty of Superiority`) &&
+        mood.skill($skill`Stevedave's Shanty of Superiority`);
+    mood.skill($skill`Ur-Kel's Aria of Annoyance`);
+    mood.skill($skill`Feel Excitement`);
+    mood.execute();
 
     cliExecute('retrocape mysticality');
 
@@ -568,17 +572,36 @@ function doFreeFights() {
     }
 
     // 10x back-up sausage fight @ The Dire Warren with Sombrero
-    // Macro.skill($skill`back-up to your last enemy`)
-    //     .if_('!monstername "sausage goblin"', new Macro().step('abort'))
-    //     .trySkill($skill`Feel Pride`)
-    //     .skill($skill`Barrage of Tears`)
-    //     .skill($skill`Spittoon Monsoon`)
-    //     .skill($skill`saucestorm`).setAutoAttack();
-    //
-    // while (get('_backUpUses') < 10) {
-    //     upkeepHpAndMp();
-    //     adv1($location`The Dire Warren`, -1, '');
-    // }
+    Macro.skill($skill`Back-Up to your Last Enemy`)
+        .if_('!monstername "sausage goblin"', new Macro().step('abort'))
+        .trySkill($skill`Feel Pride`)
+        .skill($skill`Barrage of Tears`)
+        .skill($skill`Spittoon Monsoon`)
+        .skill($skill`Saucestorm`).setAutoAttack();
+
+    while (get('_backUpUses') < 10) {
+        upkeepHpAndMp();
+        adv1($location`The Dire Warren`, -1, '');
+    }
+
+    // Professor chain off the last back-up
+    equip($item`Fourth of May Cosplay Saber`);
+    useFamiliar($familiar`Pocket Professor`);
+    // equip($slot`familiar`, $item`Pocket Professor memory chip`);
+
+    // if (myFamiliarWeight() < 75) abort('not maxing fam weight');
+
+    Macro.trySkill($skill`Back-Up to your Last Enemy`)
+        .skill($skill`Curse of Weaksauce`)
+        .skill($skill`Entangling Noodles`)
+        .trySkill(Skill.get('Lecture on Relativity'))
+        .skill($skill`Spittoon Monsoon`)
+        .skill($skill`Saucegeyser`)
+        .setAutoAttack();
+    adv1($location`The Dire Warren`);
+    while (inMultiFight()) runCombat();
+    equip($slot`familiar`, $item`none`);
+    setAutoAttack(0);
 
     setAutoAttack(0);
     restoreHp(myMaxhp());
@@ -738,9 +761,9 @@ function doWeaponTest() {
         );
     }
 
-    if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
-        adventureWithCarolGhost($effect`Do You Crush What I Crush?`);
-    }
+    // if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
+    //     adventureWithCarolGhost($effect`Do You Crush What I Crush?`);
+    // }
 
     if (!haveEffect($effect`In a Lather`)) {
         useSkill($skill`The Ode to Booze`);
@@ -768,7 +791,7 @@ function doWeaponTest() {
     ensureEffect($effect`Billiards Belligerence`);
     // ensureNpcEffect($effect`Engorged Weapon`, 1, $item`Meleegra&trade; pills`); Gnome camp
     ensureEffect($effect`Lack of Body-Building`);
-    ensureEffect($effect`Bow-Legged Swagger`);
+    haveSkill($skill`Bow-Legged Swagger`) && ensureEffect($effect`Bow-Legged Swagger`);
 
     if (availableAmount($item`Punching Potion`)) {
         ensurePotionEffect($effect`Feeling Punchy`, $item`Punching Potion`);
@@ -808,14 +831,14 @@ function doSpellTest() {
     }
 
     // Tea party
-    if (!get('_hccsMinRealTime') && !getPropertyBoolean('_madTeaParty')) {
+    if (!getPropertyBoolean('_madTeaParty')) {
         ensureSewerItem(1, $item`mariachi hat`);
         ensureEffect($effect`Full Bottle in front of Me`);
     }
 
-    if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
-        adventureWithCarolGhost($effect`Do You Crush What I Crush?`);
-    }
+    // if (haveEffect($effect`Do You Crush What I Crush?`) === 0) {
+    //     adventureWithCarolGhost($effect`Do You Crush What I Crush?`);
+    // }
 
     useSkill(1, $skill`Spirit of Cayenne`);
 
@@ -870,23 +893,21 @@ function doSpellTest() {
 
 function doHotResTest() {
     // fax and lick factory worker
-    if (!get('_hccsMinRealTime')) {
-        if (availableAmount($item`photocopied monster`) === 0 && !get('_photocopyUsed')) {
-            chatPrivate('cheesefax', 'factory worker');
-            for (let i = 0; i < 2; i++) {
-                wait(10);
-                cliExecute('fax receive');
-                if (getProperty('photocopyMonster') === 'factory worker') break;
-                // otherwise got the wrong monster, put it back.
-                cliExecute('fax send');
-            }
-            if (availableAmount($item`photocopied monster`) === 0) throw 'Failed to fax in factory worker.';
-
-            cliExecute('mood apathetic');
-            Macro.skill($skill`Shocking Lick`).setAutoAttack();
-            use(1, $item`photocopied monster`);
-            setAutoAttack(0);
+    if (availableAmount($item`photocopied monster`) === 0 && !get('_photocopyUsed')) {
+        chatPrivate('cheesefax', 'factory worker');
+        for (let i = 0; i < 2; i++) {
+            wait(10);
+            cliExecute('fax receive');
+            if (getProperty('photocopyMonster') === 'factory worker') break;
+            // otherwise got the wrong monster, put it back.
+            cliExecute('fax send');
         }
+        if (availableAmount($item`photocopied monster`) === 0) throw 'Failed to fax in factory worker.';
+
+        cliExecute('mood apathetic');
+        Macro.skill($skill`Shocking Lick`).setAutoAttack();
+        use(1, $item`photocopied monster`);
+        setAutoAttack(0);
     }
 
     // Make sure no moon spoon.
@@ -970,12 +991,8 @@ function doNonCombatTest() {
     doTest(Test.NONCOMBAT);
 }
 
-export function main(input: string): void {
+export function main(): void {
     setAutoAttack(0);
-
-    set('_hccsMinRealTime', Boolean(input && input.match(/fast/)));
-    // if (!userConfirm(`Running hccs optimizing ${get('_hccsMinRealTime') ? 'min real time.' : 'min turns.'}`))
-    //     {return;}
 
     if (myTurncount() < 60) {
         setup();
@@ -1006,11 +1023,6 @@ export function main(input: string): void {
         tryUse(1, $item`astral six-pack`);
         useSkill(2, $skill`The Ode to Booze`);
         drink(6, $item`astral pilsner`);
-
-        if (get('_hccsMinRealTime')) {
-            useSkill(1, $skill`Bowl Full of Jelly`);
-            eat(1, $item`bowl full of jelly`);
-        }
     }
 
     if (!testDone(Test.ITEM)) doItemTest();
@@ -1038,38 +1050,37 @@ export function main(input: string): void {
         doTest(Test.DONATE);
     }
 
-    setProperty('autoSatisfyWithNPCs', getProperty('_saved_autoSatisfyWithNPCs'));
-    setProperty('autoSatisfyWithCoinmasters', getProperty('_saved_autoSatisfyWithCoinmasters'));
-    setProperty('hpAutoRecovery', '0.8');
-
-    cliExecute('mood default');
-    cliExecute('ccs default');
-    cliExecute('boombox food');
-    cliExecute('refresh all');
-
-    // Tune moon sign to Wombat (for meat farming).
-    if (!get('moonTuned')) {
-        // Unequip spoon.
-        equip($slot`acc1`, $item`Retrospecs`);
-        equip($slot`acc2`, $item`Powerful Glove`);
-        equip($slot`acc3`, $item`Lil' Doctor™ bag`);
-
-        // Actually tune the moon.
-        visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
-    }
-
-    putShop(180000, 0, 1, $item`blood-drive sticker`);
-    putShop(99000, 0, 1, $item`emergency margarita`);
-    putShop(94000, 0, 1, $item`vintage smart drink`);
-
-    cliExecute('hagnk all');
-    cliExecute('acquire bitchin meatcar');
-    cliExecute('use clockwork maid');
-    buy($item`pocket wish`, 1, 50000);
-    set('_hccsMinRealTime', false);
-    visitUrl('peevpee.php?action=smashstone&confirm=on');
-    maximize('hp', false);
-    eat($item`magical sausage`);
-    useSkill($skill`Cannelloni Cocoon`);
-    cliExecute('bb_login');
+    // setProperty('autoSatisfyWithNPCs', getProperty('_saved_autoSatisfyWithNPCs'));
+    // setProperty('autoSatisfyWithCoinmasters', getProperty('_saved_autoSatisfyWithCoinmasters'));
+    // setProperty('hpAutoRecovery', '0.8');
+    //
+    // cliExecute('mood default');
+    // cliExecute('ccs default');
+    // // cliExecute('boombox food');
+    // cliExecute('refresh all');
+    //
+    // // Tune moon sign to Wombat (for meat farming).
+    // if (!get('moonTuned')) {
+    //     // Unequip spoon.
+    //     equip($slot`acc1`, $item`Retrospecs`);
+    //     equip($slot`acc2`, $item`Powerful Glove`);
+    //     equip($slot`acc3`, $item`Lil' Doctor™ bag`);
+    //
+    //     // Actually tune the moon.
+    //     visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
+    // }
+    //
+    // putShop(180000, 0, 1, $item`blood-drive sticker`);
+    // putShop(99000, 0, 1, $item`emergency margarita`);
+    // putShop(94000, 0, 1, $item`vintage smart drink`);
+    //
+    // cliExecute('hagnk all');
+    // cliExecute('acquire bitchin meatcar');
+    // cliExecute('use clockwork maid');
+    // buy($item`pocket wish`, 1, 50000);
+    // visitUrl('peevpee.php?action=smashstone&confirm=on');
+    // maximize('hp', false);
+    // eat($item`magical sausage`);
+    // useSkill($skill`Cannelloni Cocoon`);
+    // cliExecute('bb_login');
 }
