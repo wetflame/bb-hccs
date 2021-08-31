@@ -202,6 +202,7 @@ function testDone(testNum: number) {
 }
 
 function doTest(testNum: Test) {
+    doGuaranteedGoblin();
     if (!testDone(testNum)) {
         let predictedTurns = 60;
         if (testNum !== Test.DONATE) {
@@ -341,18 +342,6 @@ function getPizzaIngredients() {
 
     useFamiliar($familiar`Plastic Pirate Skull`); // maxmize scrap drops
 
-    // if (availableAmount($item`eggbeater`) === 0) {
-    //     // Saber for CEA ingredients (CER* and MAL* pizzas)
-    //     adventureMacro(
-    //         $location`The Haunted Kitchen`,
-    //         Macro.step('mark start')
-    //             .if_('monstername "possessed silverware drawer"', Macro.trySkill('use the force'))
-    //             .trySkill('CHEAT CODE: Replace Enemy')
-    //             .step('goto start')
-    //     );
-    //     if (handlingChoice()) runChoice(3);
-    // }
-    // autosell(1, $item`corn holder`);
     mapAndSaberMonster($location`The Haunted Kitchen`, $monster`possessed silverware drawer`);
 
     // Saber tomato (reagent potion)
@@ -679,10 +668,10 @@ function doItemTest() {
     // Create CER pizza
     if (!haveEffect($effect`Certainty`)) {
         ensureSewerItem(1, $item`ravioli hat`);
-        eatPizza(
-            $item`coconut shell`,
-            $item`eggbeater`,
-            $item`ravioli hat`,
+        eatPizza( // TODO
+            $item`coconut shell`, // cosmetic football
+            $item`ear candle`,
+            $item`ravioli hat`, // runproof mascara
             $item`blood-faced volleyball` // get that cracker
         );
 
@@ -985,13 +974,12 @@ export function main(input: string): void {
     setAutoAttack(0);
 
     set('_hccsMinRealTime', Boolean(input && input.match(/fast/)));
-    if (!userConfirm(`Running hccs optimizing ${get('_hccsMinRealTime') ? 'min real time.' : 'min turns.'}`))
-        {return;}
+    // if (!userConfirm(`Running hccs optimizing ${get('_hccsMinRealTime') ? 'min real time.' : 'min turns.'}`))
+    //     {return;}
 
     if (myTurncount() < 60) {
         setup();
         getPizzaIngredients();
-        doGuaranteedGoblin();
         doTest(Test.COIL_WIRE);
     }
 
