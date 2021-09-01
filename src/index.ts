@@ -330,7 +330,7 @@ function setup() {
 function getPizzaIngredients() {
     if (availableAmount($item`cherry`) > 0) return;
 
-    setProperty('choiceAdventure1387', '3'); // set saber to drop items
+    setChoice(1387, 3); // set saber to drop items
 
     // Put on some regen gear
     equip($item`Fourth of May Cosplay Saber`);
@@ -539,9 +539,9 @@ function doFreeFights() {
     }
 
     // Neverending Party
-    set('choiceAdventure1322', '2'); // Here to Party
-    set('choiceAdventure1324', '1'); // It Hasn't Ended, It's Just Paused; Head upstairs
-    set('choiceAdventure1325', '2'); // A Room With a View... Of a Bed; Read the tomes
+    setChoice(1322, 2); // Here to Party
+    setChoice(1324, 1); // It Hasn't Ended, It's Just Paused; Head upstairs
+    setChoice(1325, 2); // A Room With a View... Of a Bed; Read the tomes
 
     // kill a Kramco to prep the back-up camera
     if (sausageFightGuaranteed()) {
