@@ -115,11 +115,11 @@ const desiredTurns: turnsObject = {
     [Test.MYS]: 1,
     [Test.MOX]: 1,
     [Test.ITEM]: 2,
-    [Test.WEAPON]: 15,
-    [Test.HOT_RES]: 33,
-    [Test.SPELL]: 41,
+    [Test.WEAPON]: 60,
+    [Test.HOT_RES]: 60,
+    [Test.SPELL]: 60,
     [Test.NONCOMBAT]: 1,
-    [Test.FAMILIAR]: 45,
+    [Test.FAMILIAR]: 60,
     [Test.COIL_WIRE]: 60,
 };
 
@@ -251,7 +251,7 @@ function setup() {
     autosell(5, $item`porquoise`);
     autosell(5, $item`hamethyst`);
 
-    setClan('Bonus Adventures from Hell');
+    setClan('Old CW\'s Germ Free Clan');
 
     // Do buy stuff from NPC stores and coinmasters.
     setProperty('_saved_autoSatisfyWithNPCs', getProperty('autoSatisfyWithNPCs'));
@@ -272,6 +272,7 @@ function setup() {
 
     // Turn off Lil' Doctor quests.
     setChoice(1340, 3);
+    //setChoice(); // set saber choice
 
     // fiddle with backup camera (reverser and ML)
     cliExecute('backupcamera reverser on');
@@ -312,14 +313,6 @@ function setup() {
         visitUrl('clan_viplounge.php?action=lookingglass&whichfloor=2');
         while (getPropertyInt('_genieWishesUsed') < 3) {
             cliExecute('genie wish for more wishes');
-        }
-
-        setClan('Bonus Adventures from Hell');
-        if (getPropertyInt('_clanFortuneConsultUses') < 3) {
-            while (getPropertyInt('_clanFortuneConsultUses') < 3) {
-                cliExecute('fortune cheesefax');
-                cliExecute('wait 5');
-            }
         }
 
         // get blood-faced volleyball
@@ -477,7 +470,7 @@ function buffBeforeGoblins() {
 
     ensureEffect($effect`Blessing of your favorite Bird`); // Should be 75% myst for now.
     ensureSong($effect`Polka of Plenty`);
-    ensureEffect($effect`Song of Bravado`);
+    // ensureEffect($effect`Song of Bravado`);
 }
 
 function doFreeFights() {
@@ -630,7 +623,7 @@ function doMoxTest() {
     use(1, $item`Bird-a-Day calendar`);
     ensureEffect($effect`Blessing of the Bird`);
     ensureEffect($effect`Big`);
-    ensureEffect($effect`Song of Bravado`);
+    // ensureEffect($effect`Song of Bravado`);
     // ensureSong($effect`Stevedave's Shanty of Superiority`);
     ensureSong($effect`The Moxious Madrigal`);
     // ensureEffect($effect`Quiet Desperation`);
@@ -653,7 +646,7 @@ function doMusTest() {
     else ensurePotionEffect($effect`Expert Oiliness`, $item`oil of expertise`);
 
     ensureEffect($effect`Big`);
-    ensureEffect($effect`Song of Bravado`);
+    // ensureEffect($effect`Song of Bravado`);
     // ensureSong($effect`Stevedave's Shanty of Superiority`);
     // ensureSong($effect`Power Ballad of the Arrowsmith`);
     // ensureEffect($effect`Rage of the Reindeer`);
@@ -781,7 +774,7 @@ function doWeaponTest() {
     if (availableAmount($item`LOV Elixir #3`) > 0) ensureEffect($effect`The Power of LOV`);
 
     ensureEffect($effect`Carol of the Bulls`);
-    ensureEffect($effect`Song of the North`);
+    // ensureEffect($effect`Song of the North`);
     // ensureEffect($effect`Rage of the Reindeer`);
     // ensureEffect($effect`Frenzied, Bloody`);
     // ensureEffect($effect`Scowl of the Auk`);
@@ -817,9 +810,9 @@ function doWeaponTest() {
 }
 
 function doSpellTest() {
-    ensureEffect($effect`Simmering`);
+    // ensureEffect($effect`Simmering`);
 
-    ensureEffect($effect`Song of Sauce`);
+    // ensureEffect($effect`Song of Sauce`);
     ensureEffect($effect`AAA-Charged`);
     ensureEffect($effect`Carol of the Hells`);
     // ensureEffect($effect`Arched Eyebrow of the Archmage`);
@@ -856,26 +849,26 @@ function doSpellTest() {
 
     // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
     maximize('hot res, 0.01 familiar weight', false);
-    if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
-        if (myMp() < 20) {
-            ensureCreateItem(1, $item`magical sausage`);
-            eat(1, $item`magical sausage`);
-        }
-        while (myHp() < myMaxhp()) {
-            useSkill(1, $skill`Cannelloni Cocoon`);
-        }
-        if (myMp() < 100) {
-            ensureCreateItem(1, $item`magical sausage`);
-            eat(1, $item`magical sausage`);
-        }
-        if (Math.round(numericModifier('spooky resistance')) < 10) {
-            ensureEffect($effect`Does It Have a Skull In There??`);
-            if (Math.round(numericModifier('spooky resistance')) < 10) {
-                throw 'Not enough spooky res for Deep Dark Visions.';
-            }
-        }
-        useSkill(1, $skill`Deep Dark Visions`);
-    }
+    // if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
+    //     if (myMp() < 20) {
+    //         ensureCreateItem(1, $item`magical sausage`);
+    //         eat(1, $item`magical sausage`);
+    //     }
+    //     while (myHp() < myMaxhp()) {
+    //         useSkill(1, $skill`Cannelloni Cocoon`);
+    //     }
+    //     if (myMp() < 100) {
+    //         ensureCreateItem(1, $item`magical sausage`);
+    //         eat(1, $item`magical sausage`);
+    //     }
+    //     if (Math.round(numericModifier('spooky resistance')) < 10) {
+    //         ensureEffect($effect`Does It Have a Skull In There??`);
+    //         if (Math.round(numericModifier('spooky resistance')) < 10) {
+    //             throw 'Not enough spooky res for Deep Dark Visions.';
+    //         }
+    //     }
+    //     useSkill(1, $skill`Deep Dark Visions`);
+    // }
 
     equip($item`weeping willow wand`);
     equip($slot`acc1`, $item`Powerful Glove`);
