@@ -272,7 +272,7 @@ function setup() {
 
     // Turn off Lil' Doctor quests.
     setChoice(1340, 3);
-    //setChoice(); // set saber choice
+    setChoice(1387, 3); // set saber choice
 
     // fiddle with backup camera (reverser and ML)
     cliExecute('backupcamera reverser on');
