@@ -932,7 +932,7 @@ function doHotResTest() {
     useFamiliar($familiar`Exotic Parrot`);
 
     cliExecute('retrocape vampire hold');
-    equip($item`Fourth of May Cosplay Saber`);
+    // equip($item`Fourth of May Cosplay Saber`);
     equip($item`unwrapped knock-off retro superhero cape`);
     equip($item`lava-proof pants`);
     equip($slot`acc3`, $item`heat-resistant gloves`);
@@ -940,7 +940,7 @@ function doHotResTest() {
     equip($slot`familiar`, $item`cracker`);
 
     // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
-    // maximize('hot res, 0.01 familiar weight', false);
+    maximize('hot res, 0.01 familiar weight', false);
 
     doTest(Test.HOT_RES);
 }
