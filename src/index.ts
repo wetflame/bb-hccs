@@ -540,18 +540,6 @@ function doFreeFights() {
     set('choiceAdventure1324', '1'); // It Hasn't Ended, It's Just Paused; Head upstairs
     set('choiceAdventure1325', '2'); // A Room With a View... Of a Bed; Read the tomes
 
-    // kill a Kramco to prep the back-up camera
-    if (sausageFightGuaranteed()) {
-        upkeepHpAndMp();
-        equip($item`Kramco Sausage-o-Matic™`);
-        Macro.if_('!monstername "sausage goblin"', new Macro().step('abort'))
-            .skill($skill`Barrage of Tears`)
-            .skill($skill`Spittoon Monsoon`)
-            .skill($skill`Saucestorm`).setAutoAttack();
-        adv1($location`Noob Cave`, -1, '');
-        setAutoAttack(0);
-    }
-
     equip($item`familiar scrapbook`);
 
     Macro.trySkill($skill`Feel Pride`)
@@ -562,6 +550,18 @@ function doFreeFights() {
     while (get('_neverendingPartyFreeTurns') < 10) {
         upkeepHpAndMp();
         adv1($location`The Neverending Party`, -1, '');
+    }
+
+    // kill a Kramco to prep the back-up camera
+    if (sausageFightGuaranteed()) {
+        upkeepHpAndMp();
+        equip($item`Kramco Sausage-o-Matic™`);
+        Macro.if_('!monstername "sausage goblin"', new Macro().step('abort'))
+            .skill($skill`Barrage of Tears`)
+            .skill($skill`Spittoon Monsoon`)
+            .skill($skill`Saucestorm`).setAutoAttack();
+        adv1($location`Noob Cave`, -1, '');
+        setAutoAttack(0);
     }
 
     // 10x back-up sausage fight @ The Dire Warren with Sombrero
