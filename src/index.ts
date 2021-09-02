@@ -75,14 +75,12 @@ import {
     ensurePullEffect,
     ensureSewerItem,
     ensureSong,
-    getPropertyBoolean,
     getPropertyInt,
     mapAndSaberMonster,
     pullIfPossible,
     sausageFightGuaranteed,
     setChoice,
     setClan,
-    setPropertyInt,
     tryUse,
     wishEffect,
 } from './lib';
@@ -238,7 +236,7 @@ const getBatteries = () => {
 function setup() {
     if (availableAmount($item`blood-faced volleyball`) > 0) return;
 
-    setPropertyInt('bb_ScriptStartCS', gametimeToInt());
+    set('bb_ScriptStartCS', gametimeToInt());
 
     // Sell pork gems + tent
     visitUrl('tutorial.php?action=toot');
@@ -412,7 +410,7 @@ function buffBeforeGoblins() {
     }
 
     // craft potions after eating to ensure we have adventures
-    if (!getPropertyBoolean('hasRange')) {
+    if (!get('hasRange')) {
         ensureItem(1, $item`Dramatic™ range`);
         use(1, $item`Dramatic™ range`);
     }
@@ -744,7 +742,7 @@ function doWeaponTest() {
 
     if (!haveEffect($effect`In a Lather`)) {
         useSkill($skill`The Ode to Booze`);
-        cliExecute('drink Sockdollager');
+        drink($item`Sockdollager`);
     }
 
     if (availableAmount($item`twinkly nuggets`) > 0) {
@@ -781,7 +779,7 @@ function doWeaponTest() {
     }
 
     // Tea party
-    if (!getPropertyBoolean('_madTeaParty')) {
+    if (!get('_madTeaParty')) {
         ensureItem(1, $item`goofily-plumed helmet`);
         ensureEffect($effect`Weapon of Mass Destruction`);
     }
@@ -808,7 +806,7 @@ function doSpellTest() {
     }
 
     // Tea party
-    if (!get('_hccsMinRealTime') && !getPropertyBoolean('_madTeaParty')) {
+    if (!get('_hccsMinRealTime') && !get('_madTeaParty')) {
         ensureSewerItem(1, $item`mariachi hat`);
         ensureEffect($effect`Full Bottle in front of Me`);
     }
@@ -926,7 +924,7 @@ function doHotResTest() {
 
     if (!haveEffect($effect`Feeling No Pain`)) {
         useSkill($skill`The Ode to Booze`);
-        cliExecute('drink Ish Kabibble');
+        drink($item`Ish Kabibble`);
     }
 
     useFamiliar($familiar`Exotic Parrot`);
