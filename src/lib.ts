@@ -1,57 +1,57 @@
 import {
-  getProperty,
-  toInt,
-  setProperty,
-  familiarWeight,
-  myFamiliar,
-  weightAdjustment,
+  abort,
   availableAmount,
   buy,
-  use,
-  retrieveItem,
-  haveEffect,
-  cliExecute,
-  print,
-  myMp,
-  myMaxmp,
-  eat,
-  totalTurnsPlayed,
-  getClanName,
-  visitUrl,
-  getFuel,
-  create,
-  haveSkill,
-  useSkill,
-  toUrl,
   buyUsingStorage,
+  cliExecute,
+  create,
+  eat,
   equip,
+  equippedItem,
+  familiarWeight,
+  getClanName,
+  getProperty,
+  handlingChoice,
+  haveEffect,
+  haveSkill,
+  myFamiliar,
+  myMaxmp,
+  myMp,
+  print,
   pullsRemaining,
+  retrieveItem,
+  runChoice,
+  runCombat,
+  setProperty,
   shopAmount,
   storageAmount,
   takeShop,
-  toString as toStringAsh,
   toEffect,
-  runCombat,
-  runChoice,
-  handlingChoice,
+  toInt,
+  toString as toStringAsh,
+  totalTurnsPlayed,
+  toUrl,
+  use,
   useFamiliar,
-  abort,
-  equippedItem,
+  useSkill,
+  visitUrl,
+  weightAdjustment,
 } from 'kolmafia';
 import {
   $effect,
   $effects,
-  $item,
-  $skill,
-  Macro,
   $familiar,
+  $item,
+  $location,
+  $skill,
   $slot,
   adventureMacroAuto,
-  $location,
   get,
+  Macro,
+  set,
 } from 'libram';
 
-export function getPropertyInt(name: string) {
+export function getPropertyInt(name: string): number {
   const str = getProperty(name);
   if (str === '') {
     throw `Unknown property ${name}.`;
@@ -59,31 +59,19 @@ export function getPropertyInt(name: string) {
   return toInt(str);
 }
 
-export function setPropertyInt(name: string, value: number) {
-  setProperty(name, `${value}`);
+export function incrementProperty(name: string): void {
+  set(name, getPropertyInt(name) + 1);
 }
 
-export function incrementProperty(name: string) {
-  setPropertyInt(name, getPropertyInt(name) + 1);
-}
-
-export function getPropertyBoolean(name: string) {
-  const str = getProperty(name);
-  if (str === '') {
-    throw `Unknown property ${name}.`;
-  }
-  return str === 'true';
-}
-
-export function setChoice(adv: number, choice: number) {
+export function setChoice(adv: number, choice: number): void {
   setProperty(`choiceAdventure${adv}`, `${choice}`);
 }
 
-export function myFamiliarWeight() {
+export function myFamiliarWeight(): number {
   return familiarWeight(myFamiliar()) + weightAdjustment();
 }
 
-export function ensureItem(quantity: number, it: Item) {
+export function ensureItem(quantity: number, it: Item): void {
   if (availableAmount(it) < quantity) {
     buy(quantity - availableAmount(it), it);
   }
@@ -92,7 +80,7 @@ export function ensureItem(quantity: number, it: Item) {
   }
 }
 
-export function ensureCreateItem(quantity: number, it: Item) {
+export function ensureCreateItem(quantity: number, it: Item): void {
   if (availableAmount(it) < quantity) {
     create(quantity - availableAmount(it), it);
   }
@@ -101,14 +89,14 @@ export function ensureCreateItem(quantity: number, it: Item) {
   }
 }
 
-export function ensureSewerItem(quantity: number, it: Item) {
+export function ensureSewerItem(quantity: number, it: Item): void {
   while (availableAmount(it) < quantity) {
     ensureItem(1, $item`chewing gum on a string`);
     use(1, $item`chewing gum on a string`);
   }
 }
 
-export function ensureHermitItem(quantity: number, it: Item) {
+export function ensureHermitItem(quantity: number, it: Item): void {
   if (availableAmount(it) >= quantity) {
     return;
   }
@@ -126,7 +114,7 @@ export function ensureHermitItem(quantity: number, it: Item) {
   retrieveItem(count, it);
 }
 
-export function ensureNpcEffect(ef: Effect, quantity: number, potion: Item) {
+export function ensureNpcEffect(ef: Effect, quantity: number, potion: Item): void {
   if (haveEffect(ef) === 0) {
     ensureItem(quantity, potion);
     if (!cliExecute(ef.default) || haveEffect(ef) === 0) {
@@ -137,7 +125,7 @@ export function ensureNpcEffect(ef: Effect, quantity: number, potion: Item) {
   }
 }
 
-export function ensurePotionEffect(ef: Effect, potion: Item) {
+export function ensurePotionEffect(ef: Effect, potion: Item): void {
   if (haveEffect(ef) === 0) {
     if (availableAmount(potion) === 0) {
       create(1, potion);
@@ -150,7 +138,7 @@ export function ensurePotionEffect(ef: Effect, potion: Item) {
   }
 }
 
-export function ensureEffect(ef: Effect, turns = 1) {
+export function ensureEffect(ef: Effect, turns = 1): void {
   if (haveEffect(ef) < turns) {
     if (!cliExecute(ef.default) || haveEffect(ef) === 0) {
       throw `Failed to get effect ${ef.name}.`;
@@ -160,21 +148,21 @@ export function ensureEffect(ef: Effect, turns = 1) {
   }
 }
 
-export function ensureMpTonic(mp: number) {
+export function ensureMpTonic(mp: number): void {
   while (myMp() < mp) {
     ensureItem(1, $item`Doc Galaktik's Invigorating Tonic`);
     use(1, $item`Doc Galaktik's Invigorating Tonic`);
   }
 }
 
-export function ensureMpSausage(mp: number) {
+export function ensureMpSausage(mp: number): void {
   while (myMp() < Math.min(mp, myMaxmp())) {
     ensureCreateItem(1, $item`magical sausage`);
     eat(1, $item`magical sausage`);
   }
 }
 
-export function sausageFightGuaranteed() {
+export function sausageFightGuaranteed(): boolean {
   const goblinsFought = getPropertyInt('_sausageFights');
   const nextGuaranteed =
     getPropertyInt('_lastSausageMonsterTurn') +
@@ -184,11 +172,11 @@ export function sausageFightGuaranteed() {
   return goblinsFought === 0 || totalTurnsPlayed() >= nextGuaranteed;
 }
 
-export function itemPriority(...items: Item[]) {
+export function itemPriority(...items: Item[]): Item {
   return items.find((item: Item) => availableAmount(item) > 0) ?? items[items.length - 1];
 }
 
-export function setClan(target: string) {
+export function setClan(target: string): boolean {
   if (getClanName() !== target) {
     const clanCache = JSON.parse(getProperty('hccs_clanCache') || '{}');
     if (clanCache.target === undefined) {
@@ -209,60 +197,24 @@ export function setClan(target: string) {
   return true;
 }
 
-export function ensureDough(goal: number) {
-  while (availableAmount($item`wad of dough`) < goal) {
-    buy(1, $item`all-purpose flower`);
-    use(1, $item`all-purpose flower`);
-  }
-}
-
-export function fuelAsdon(goal: number) {
-  const startingFuel = getFuel();
-  if (startingFuel > goal) return startingFuel;
-
-  print(`Fueling asdon. Currently ${startingFuel} litres.`);
-  const estimated = Math.floor((goal - startingFuel) / 5);
-  const bread = availableAmount($item`loaf of soda bread`);
-  ensureDough(estimated - bread);
-  ensureItem(estimated - bread, $item`soda water`);
-  ensureCreateItem(estimated, $item`loaf of soda bread`);
-  cliExecute(`asdonmartin fuel ${estimated} loaf of soda bread`);
-  while (getFuel() < goal) {
-    ensureDough(1);
-    ensureItem(1, $item`soda water`);
-    ensureCreateItem(1, $item`loaf of soda bread`);
-    cliExecute('asdonmartin fuel 1 loaf of soda bread');
-  }
-  const endingFuel = getFuel();
-  print(`Done fueling. Now ${endingFuel} litres.`);
-  return endingFuel;
-}
-
-export function ensureAsdonEffect(ef: Effect) {
-  if (haveEffect(ef) === 0) {
-    fuelAsdon(37);
-  }
-  ensureEffect(ef);
-}
-
-export function eatPizza(...ingredients: Item[]) {
-  let ingrs = ingredients.map((ingr) => toInt(ingr)).join();
+export function eatPizza(...ingredients: Item[]): void {
+  const ingrs = ingredients.map((ingr) => toInt(ingr)).join();
   visitUrl(`campground.php?action=makepizza&pizza=${ingrs}`);
   ensureItem(1, $item`diabolic pizza`);
   eat($item`diabolic pizza`);
   cliExecute('refresh inventory');
 }
 
-export function mapMonster(location: Location, monster: Monster) {
+export function mapMonster(location: Location, monster: Monster): void {
   if (
     haveSkill($skill`Map the Monsters`) &&
-    !getPropertyBoolean('mappingMonsters') &&
-    getPropertyInt('_monstersMapped') < 3
+    !get('mappingMonsters') &&
+    get('_monstersMapped') < 3
   ) {
     useSkill($skill`Map the Monsters`);
   }
 
-  if (!getPropertyBoolean('mappingMonsters')) throw 'Failed to setup Map the Monsters.';
+  if (!get('mappingMonsters')) throw 'Failed to setup Map the Monsters.';
 
   const mapPage = visitUrl(toUrl(location), false, true);
   if (!mapPage.includes('Leading Yourself Right to Them')) throw 'Something went wrong mapping.';
@@ -273,14 +225,14 @@ export function mapMonster(location: Location, monster: Monster) {
   if (!fightPage.includes(monster.name)) throw 'Something went wrong starting the fight.';
 }
 
-export function mapAndSaberMonster(location: Location, monster: Monster) {
+export function mapAndSaberMonster(location: Location, monster: Monster): void {
   mapMonster(location, monster);
 
-  withMacro(Macro.skill($skill`use the force`), runCombat);
+  withMacro(Macro.skill($skill`Use the Force`), runCombat);
   if (handlingChoice()) runChoice(3);
 }
 
-export function tryUse(quantity: number, it: Item) {
+export function tryUse(quantity: number, it: Item): boolean {
   if (availableAmount(it) > 0) {
     return use(quantity, it);
   } else {
@@ -288,7 +240,7 @@ export function tryUse(quantity: number, it: Item) {
   }
 }
 
-export function tryEquip(it: Item) {
+export function tryEquip(it: Item): boolean {
   if (availableAmount(it) > 0) {
     return equip(it);
   } else {
@@ -296,7 +248,7 @@ export function tryEquip(it: Item) {
   }
 }
 
-export function wishEffect(ef: Effect) {
+export function wishEffect(ef: Effect): void {
   if (haveEffect(ef) === 0) {
     cliExecute(`genie effect ${ef.name}`);
   } else {
@@ -304,7 +256,7 @@ export function wishEffect(ef: Effect) {
   }
 }
 
-export function pullIfPossible(quantity: number, it: Item, maxPrice: number) {
+export function pullIfPossible(quantity: number, it: Item, maxPrice: number): boolean {
   if (pullsRemaining() > 0) {
     const quantityPull = Math.max(0, quantity - availableAmount(it));
     if (shopAmount(it) > 0) {
@@ -318,13 +270,13 @@ export function pullIfPossible(quantity: number, it: Item, maxPrice: number) {
   } else return false;
 }
 
-export function ensurePullEffect(ef: Effect, it: Item) {
+export function ensurePullEffect(ef: Effect, it: Item): void {
   if (haveEffect(ef) === 0) {
     if (availableAmount(it) > 0 || pullIfPossible(1, it, 50000)) ensureEffect(ef);
   }
 }
 
-export function shrug(ef: Effect) {
+export function shrug(ef: Effect): void {
   if (haveEffect(ef) > 0) {
     cliExecute(`shrug ${ef.name}`);
   }
@@ -343,7 +295,7 @@ const allSongs = Skill.all()
     (skill) => toStringAsh((skill.class as unknown) as string) === 'Accordion Thief' && skill.buff
   )
   .map((skill) => toEffect(skill));
-export function openSongSlot(song: Effect) {
+export function openSongSlot(song: Effect): void {
   for (const songSlot of songSlots) {
     if (songSlot.includes(song)) {
       for (const shruggable of songSlot) {
@@ -358,7 +310,7 @@ export function openSongSlot(song: Effect) {
   }
 }
 
-export function ensureSong(ef: Effect) {
+export function ensureSong(ef: Effect): void {
   if (haveEffect(ef) === 0) {
     openSongSlot(ef);
     if (!cliExecute(ef.default) || haveEffect(ef) === 0) {
@@ -369,7 +321,7 @@ export function ensureSong(ef: Effect) {
   }
 }
 
-export function ensureOde(turns: number) {
+export function ensureOde(turns: number): void {
   while (haveEffect($effect`Ode to Booze`) < turns) {
     ensureMpTonic(50);
     openSongSlot($effect`Ode to Booze`);
@@ -377,7 +329,7 @@ export function ensureOde(turns: number) {
   }
 }
 
-export function withMacro<T>(macro: Macro, action: () => T) {
+export function withMacro<T>(macro: Macro, action: () => T): T {
   macro.save();
   try {
     return action();
@@ -386,7 +338,7 @@ export function withMacro<T>(macro: Macro, action: () => T) {
   }
 }
 
-export function adventureWithCarolGhost(effect: Effect) {
+export function adventureWithCarolGhost(effect: Effect): void {
   if (haveEffect($effect`Feeling Lost`)) abort('Attempting to Carol Ghost while feeling lost');
 
   if (
@@ -397,7 +349,7 @@ export function adventureWithCarolGhost(effect: Effect) {
     abort('Attempting to Carol Ghost with previous effect active.');
   }
 
-  let offHand = equippedItem($slot`off-hand`);
+  const offHand = equippedItem($slot`off-hand`);
   let location = $location`Noob Cave`;
   equip($item`familiar scrapbook`); // ensure no kramco
 
@@ -417,13 +369,13 @@ export function adventureWithCarolGhost(effect: Effect) {
   }
 
   if (get('_reflexHammerUsed') >= 3 && get('_chestXRayUsed') >= 3)
-    throw 'No free-kill for Carol Ghost!';
+    {throw 'No free-kill for Carol Ghost!';}
   useFamiliar($familiar`Ghost of Crimbo Carols`);
-  equip($slot`acc3`, $item`Lil' Doctor™ Bag`);
+  equip($slot`acc3`, $item`Lil' Doctor™ bag`);
   adventureMacroAuto(
     location,
     Macro.externalIf(get('_reflexHammerUsed') < 3, Macro.skill($skill`Reflex Hammer`)).skill(
-      $skill`chest x-ray`
+      $skill`Chest X-Ray`
     )
   );
 
