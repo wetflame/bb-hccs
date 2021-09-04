@@ -17,6 +17,7 @@ import {
     handlingChoice,
     haveEffect,
     haveFamiliar,
+    haveOutfit,
     haveSkill,
     maximize,
     myAdventures,
@@ -146,8 +147,6 @@ function doGuaranteedGoblin() {
 function testDone(testNum: number) {
     print(`Checking test ${testNum}...`);
     return get(`_hccsTestActual${testNum}`) !== -1;
-    // const text = visitUrl('council.php');
-    // return !containsText(text, `<input type=hidden name=option value=${testNum}>`);
 }
 
 function clickTestButton(test: Test) {
@@ -180,6 +179,10 @@ function runTest(testId: Test) {
                 while (predictedTurns > myAdventures()) {
                     eat(1, $item`magical sausage`);
                 }
+
+                [$slot`hat`, $slot`back`, $slot`weapon`, $slot`off-hand`, $slot`pants`, $slot`shirt`, $slot`acc1`, $slot`acc2`, $slot`acc3`, $slot`familiar`].forEach((slot) =>
+                    print(`${slot.toString()}: ${equippedItem(slot)}`)
+                )
             }
             set(`_hccsTestExpected${Test[testId]}`, predictedTurns);
             clickTestButton(testId);
@@ -198,6 +201,23 @@ const getBatteries = () => {
     }
 };
 
+const ensureDeepDarkVisions = () => {
+    if (have($effect`Visions of the Deep Dark Deeps`)) return;
+    // Deep Dark Visions
+    useFamiliar($familiar`Exotic Parrot`);
+    ensureEffect($effect`Feeling Peaceful`);
+    cliExecute('retrocape vampire hold');
+
+    upkeepHpAndMp();
+    if (Math.round(numericModifier('spooky resistance')) < 10) {
+        ensureEffect($effect`Does It Have a Skull In There??`);
+        if (Math.round(numericModifier('spooky resistance')) < 10) {
+            throw 'Not enough spooky res for Deep Dark Visions.';
+        }
+    }
+    useSkill(1, $skill`Deep Dark Visions`);
+}
+
 function setup() {
     if (availableAmount($item`blood-faced volleyball`) > 0 || myLevel() > 1) return;
 
@@ -208,6 +228,10 @@ function setup() {
 
     set('bb_ScriptStartCS', gametimeToInt());
 
+    setClan('Bonus Adventures from Hell');
+
+    use($item`Bird-a-Day calendar`);
+
     // Sell pork gems + tent
     visitUrl('tutorial.php?action=toot');
     tryUse(1, $item`letter from King Ralph XI`);
@@ -215,10 +239,6 @@ function setup() {
     autosell(5, $item`baconstone`);
     autosell(5, $item`porquoise`);
     autosell(5, $item`hamethyst`);
-
-    use($item`Bird-a-Day calendar`);
-
-    setClan('Bonus Adventures from Hell');
 
     // Do buy stuff from NPC stores and coinmasters.
     setProperty('_saved_autoSatisfyWithNPCs', getProperty('autoSatisfyWithNPCs'));
@@ -228,6 +248,7 @@ function setup() {
 
     visitUrl('council.php'); // Initialize council.
     visitUrl('clan_viplounge.php?action=fwshop'); // manual visit to fireworks shop to allow purchases
+    visitUrl('clan_viplounge.php?action=lookingglass&whichfloor=2'); // get DRINK ME potion
     visitUrl('shop.php?whichshop=lathe&action=buyitem&quantity=1&whichrow=1162&pwd'); // lathe wand
 
     cliExecute('mood apathetic');
@@ -255,31 +276,13 @@ function setup() {
     }
 
     ensureItem(1, $item`toy accordion`);
+    ensureItem(1, $item`fish hatchet`);
 
-    if (!get('_floundryItemCreated')) {
-        cliExecute('acquire fish hatchet');
-    }
+    // if (!get('_floundryItemCreated')) {
+    //     cliExecute('acquire fish hatchet');
+    // }
 
-    autosell(1, $item`Newbiesport™ tent`);
-
-    // get clan consults
-    if (!get('_hccsMinRealTime')) {
-        getBatteries();
-
-        // Visiting Looking Glass in clan VIP lounge
-        visitUrl('clan_viplounge.php?action=lookingglass&whichfloor=2');
-        while (getPropertyInt('_genieWishesUsed') < 3) {
-            cliExecute('genie wish for more wishes');
-        }
-
-        setClan('Bonus Adventures from Hell');
-        if (getPropertyInt('_clanFortuneConsultUses') < 3) {
-            while (getPropertyInt('_clanFortuneConsultUses') < 3) {
-                cliExecute('fortune cheesefax');
-                cliExecute('wait 5');
-            }
-        }
-    }
+    getBatteries();
 
     ensureSewerItem(1, $item`turtle totem`);
     ensureSewerItem(1, $item`saucepan`);
@@ -325,9 +328,9 @@ function getPizzaIngredients() {
     }
     adv1($location`The Skeleton Store`);
     mapAndSaberMonster($location`The Skeleton Store`, $monster`novelty tropical skeleton`);
-    autosell(availableAmount($item`lemon`), $item`lemon`);
-    autosell(availableAmount($item`strawberry`), $item`strawberry`);
-    autosell(availableAmount($item`orange`), $item`orange`);
+    // autosell(availableAmount($item`lemon`), $item`lemon`);
+    // autosell(availableAmount($item`strawberry`), $item`strawberry`);
+    // autosell(availableAmount($item`orange`), $item`orange`);
 }
 
 function useStatGains() {
@@ -392,19 +395,16 @@ function buffBeforeGoblins() {
     ensurePotionEffect($effect`Tomato Power`, $item`tomato juice of powerful power`);
     ensurePotionEffect($effect`Mystically Oiled`, $item`ointment of the occult`);
 
-    autosell(
-        availableAmount($item`tomato juice of powerful power`),
-        $item`tomato juice of powerful power`
-    );
-    autosell(availableAmount($item`ointment of the occult`), $item`ointment of the occult`);
+    [$item`tomato juice of powerful power`, $item`ointment of the occult`].forEach((item) =>
+        autosell(availableAmount(item), item)
+    )
 
     ensureEffect($effect`Favored by Lyle`);
     ensureEffect($effect`Starry-Eyed`);
-    if (get('_powerfulGloveBatteryPowerUsed') <= 95) ensureEffect($effect`Triple-Sized`);
+    ensureEffect($effect`Triple-Sized`);
     ensureEffect($effect`Feeling Excited`);
     ensureEffect($effect`Uncucumbered`); // boxing daycare
     ensureSong($effect`The Magical Mojomuscular Melody`);
-    ensureNpcEffect($effect`Glittering Eyelashes`, 5, $item`glittery mascara`);
     ensureEffect($effect`Hulkien`);
     ensureEffect($effect`Lapdog`);
 
@@ -422,25 +422,6 @@ function buffBeforeGoblins() {
     if (myMp() < 100) {
         ensureCreateItem(1, $item`magical sausage`);
         eat($item`magical sausage`);
-    }
-
-    if (haveSkill($skill`Love Mixology`)) {
-        const lovePotion = $item`Love Potion #0`;
-        const loveEffect = $effect`Tainted Love Potion`;
-        if (haveEffect(loveEffect) === 0) {
-            if (availableAmount(lovePotion) === 0) {
-                useSkill(1, $skill`Love Mixology`);
-            }
-            visitUrl(`desc_effect.php?whicheffect=${loveEffect.descid}`);
-            if (
-                numericModifier(loveEffect, 'mysticality') > 10 &&
-                numericModifier(loveEffect, 'muscle') > -30 &&
-                numericModifier(loveEffect, 'moxie') > -30 &&
-                numericModifier(loveEffect, 'maximum hp percent') > -0.001
-            ) {
-                use(1, lovePotion);
-            }
-        }
     }
 
     ensureEffect($effect`Blessing of your favorite Bird`); // Should be 75% myst for now.
@@ -675,6 +656,8 @@ function doFamiliarTest() {
 function doWeaponTest() {
     ensureMeteorShowerAndCarolGhostEffect();
 
+    ensureDeepDarkVisions(); // do this for spell test before getting cowrrupted
+
     if (!haveEffect($effect`Cowrruption`)) {
         wishEffect($effect`Cowrruption`);
     }
@@ -732,18 +715,17 @@ function doWeaponTest() {
 }
 
 function doSpellTest() {
-    // Pool buff
+    ensureDeepDarkVisions(); // should already have this from weapon test
+
     if (get('_poolGames') < 3) {
         ensureEffect($effect`Mental A-cue-ity`);
     }
 
     // Tea party
-    if (!get('_hccsMinRealTime') && !get('_madTeaParty')) {
+    if (!get('_madTeaParty')) {
         ensureSewerItem(1, $item`mariachi hat`);
         ensureEffect($effect`Full Bottle in front of Me`);
     }
-
-    if (availableAmount($item`LOV Elixir #6`) > 0) ensureEffect($effect`The Magic of LOV`);
 
     useSkill(1, $skill`Spirit of Cayenne`);
     ensureEffect($effect`Elemental Saucesphere`);
@@ -755,34 +737,6 @@ function doSpellTest() {
     ensureEffect($effect`Carol of the Hells`);
     // ensureEffect($effect`Arched Eyebrow of the Archmage`);
     // ensureSong($effect`Jackasses' Symphony of Destruction`);
-
-    // Deep Dark Visions
-    useFamiliar($familiar`Exotic Parrot`);
-    ensureEffect($effect`Feeling Peaceful`);
-    cliExecute('retrocape vampire hold');
-
-    // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
-    maximize('hot res, 0.01 familiar weight -tie', false);
-    if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
-        if (myMp() < 20) {
-            ensureCreateItem(1, $item`magical sausage`);
-            eat(1, $item`magical sausage`);
-        }
-        while (myHp() < myMaxhp()) {
-            useSkill(1, $skill`Cannelloni Cocoon`);
-        }
-        if (myMp() < 100) {
-            ensureCreateItem(1, $item`magical sausage`);
-            eat(1, $item`magical sausage`);
-        }
-        if (Math.round(numericModifier('spooky resistance')) < 10) {
-            ensureEffect($effect`Does It Have a Skull In There??`);
-            if (Math.round(numericModifier('spooky resistance')) < 10) {
-                throw 'Not enough spooky res for Deep Dark Visions.';
-            }
-        }
-        useSkill(1, $skill`Deep Dark Visions`);
-    }
 
     ensureMeteorShowerAndCarolGhostEffect();
 
@@ -806,29 +760,11 @@ function doHotResTest() {
     equip($slot`acc2`, $item`Powerful Glove`);
     equip($slot`acc3`, $item`Lil' Doctor™ bag`);
 
-    // ensureItem(1, $item`tenderizing hammer`);
-    // cliExecute('smash * ratty knitted cap');
-    // cliExecute('smash * red-hot sausage fork');
-    // autosell(10, $item`hot nuggets`);
-    // autosell(10, $item`twinkly powder`);
-    //
-    // if (availableAmount($item`hot powder`) > 0) {
-    //     ensureEffect($effect`Flame-Retardant Trousers`);
-    // }
-    //
-    // if (
-    //     availableAmount($item`sleaze powder`) > 0 ||
-    //     availableAmount($item`lotion of sleaziness`) > 0
-    // ) {
-    //     ensurePotionEffect($effect`Sleazy Hands`, $item`lotion of sleaziness`);
-    // }
-
     // eslint-disable-next-line libram/verify-constants
     Macro.skill($skill`Fire Extinguisher: Foam Yourself`).skill($skill`Use the Force`).setAutoAttack();
     adv1($location`Noob Cave`);
     setAutoAttack(0);
-    // eslint-disable-next-line libram/verify-constants
-    if (!have($effect`Fireproof Foam Suit`)) throw `Error, not foamy enough`;
+    if (!have($effect`Fireproof Foam Suit`)) throw `Error, not foamy enough`; // eslint-disable-line
 
     ensureEffect($effect`Elemental Saucesphere`);
     ensureEffect($effect`Astral Shell`);
