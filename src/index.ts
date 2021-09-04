@@ -80,6 +80,7 @@ import {
     getPropertyBoolean,
     getPropertyInt,
     mapAndSaberMonster,
+    mapMonster,
     myFamiliarWeight,
     pullIfPossible,
     sausageFightGuaranteed,
@@ -188,6 +189,7 @@ function upkeepHpAndMp() {
 function doGuaranteedGoblin() {
     // kill a kramco for the sausage before coiling wire
     if (sausageFightGuaranteed()) {
+        if (myMp() < 8 || myHp() < 30) throw 'About to fight goblin, but too weak to do it';
         equip($item`Kramco Sausage-o-Matic™`);
         adventureMacro(
             $location`Noob Cave`,
@@ -338,10 +340,15 @@ function getPizzaIngredients() {
 
     useFamiliar($familiar`Plastic Pirate Skull`); // maxmize scrap drops
 
-    mapAndSaberMonster($location`The Haunted Kitchen`, $monster`possessed silverware drawer`);
+    if (myMp() > 20) useSkill($skill`Cannelloni Cocoon`);
+
+    Macro.skill($skill`Feel Envy`).skill($skill`Chest X-Ray`).setAutoAttack();
+    mapMonster($location`The Haunted Kitchen`, $monster`possessed silverware drawer`);
+    runCombat();
 
     // Saber tomato (reagent potion)
-    mapAndSaberMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
+    mapMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
+    runCombat();
 
     // Cherry and grapefruit in skeleton store (Saber YR)
     if (getProperty('questM23Meatsmith') === 'unstarted') {
@@ -353,10 +360,12 @@ function getPizzaIngredients() {
     if (!containsText($location`The Skeleton Store`.noncombatQueue, 'Skeletons In Store')) {
         throw 'Something went wrong at skeleton store.';
     }
-    mapAndSaberMonster($location`The Skeleton Store`, $monster`novelty tropical skeleton`);
+    mapMonster($location`The Skeleton Store`, $monster`novelty tropical skeleton`);
+    runCombat();
     autosell(availableAmount($item`lemon`), $item`lemon`);
     autosell(availableAmount($item`strawberry`), $item`strawberry`);
     autosell(availableAmount($item`orange`), $item`orange`);
+    setAutoAttack(0);
 }
 
 function useStatGains() {
