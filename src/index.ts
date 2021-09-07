@@ -337,6 +337,7 @@ function getPizzaIngredients() {
     equip($item`unwrapped knock-off retro superhero cape`);
     equip($slot`acc1`, $item`Beach Comb`);
     equip($slot`acc2`, $item`hewn moon-rune spoon`);
+    equip($slot`acc3`, $item`Lil' Doctor™ bag`);
 
     useFamiliar($familiar`Plastic Pirate Skull`); // maxmize scrap drops
 
