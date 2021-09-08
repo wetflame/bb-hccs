@@ -214,9 +214,7 @@ function doTest(testNum: Test) {
             predictedTurns = testTurnPredictions[testNum]();
             if (predictedTurns > desiredTurns[testNum]) abort('test taking too long');
 
-            while (predictedTurns > myAdventures()) {
-                eat(1, $item`magical sausage`);
-            }
+            if (predictedTurns > myAdventures()) throw 'Not enough turns to finish test.';
         }
         set(`_hccsTestExpected${testNum}`, predictedTurns);
         const turnsBeforeTest = myTurncount();
@@ -341,14 +339,16 @@ function getPizzaIngredients() {
 
     useFamiliar($familiar`Plastic Pirate Skull`); // maxmize scrap drops
 
-    if (myMp() > 20) useSkill($skill`Cannelloni Cocoon`);
+    if (!userConfirm('About to being Feel Envy + Chest X-Ray Fights. Continue?')) {
+        throw 'Aborting before Envy + X-Ray fights';
+    }
 
     Macro.skill($skill`Feel Envy`).skill($skill`Chest X-Ray`).setAutoAttack();
-    mapMonster($location`The Haunted Kitchen`, $monster`possessed silverware drawer`);
+    mapMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
     runCombat();
 
-    // Saber tomato (reagent potion)
-    mapMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
+    if (myMp() > 20) useSkill($skill`Cannelloni Cocoon`);
+    mapMonster($location`The Haunted Kitchen`, $monster`possessed silverware drawer`);
     runCombat();
 
     // Cherry and grapefruit in skeleton store (Saber YR)
@@ -572,6 +572,11 @@ function doFreeFights() {
             .skill($skill`Saucestorm`).setAutoAttack();
         adv1($location`Noob Cave`, -1, '');
         setAutoAttack(0);
+    }
+
+    if (get('lastCopyableMonster') !== $monster`sausage goblin` &&
+    !userConfirm('Going into free fights and last monster fought is NOT a goblin. Continue?')) {
+        throw 'No goblin going into free fights.';
     }
 
     // 10x back-up sausage fight @ The Dire Warren with Sombrero
