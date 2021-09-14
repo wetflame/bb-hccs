@@ -12,7 +12,7 @@ You'll have to build this yourself to make modifications. This use a typical nod
 The script is NOT fine to run twice unless you know what you're doing.
 
 Notes:
-- I currently take no astral pet and ascend Opossum sign. I run the peppermint garden and Asdon Martin. I have an ungulith in my chateau.
+- I currently take an astral statuette and ascend Wallaby sign. I run the mushroom garden and Pizza Cube.
 - The script assumes that you have a bunch of IotMs. if you are missing more than one or two of the leveling ones in particular (Prof/Kramco, NEP, Garbage Tote), your modifications to the script will fail to level enough to cap the stat tests. That will very likely mean missing daycount. 
 - Besides leveling, the Genie Bottle and Pizza Cube each save a ridiculous number of turns with wishes.
 - You can assume that (almost) everything in my cc_snapshot is used.
