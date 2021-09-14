@@ -1,4 +1,4 @@
-# bean-hccs
+# bb-hccs
 
 This is a Kingdom of Loathing script originally taken from bean-hccs, `worthawholebean (#1972588)` (`ikzann#8468` on Discord) to do 1-day Softcore Community Service runs as a Sauceror. I use it daily for ~1/180 softcore CS runs. Expect to need to make some changes, unless your set of IotMs is a strict superset of mine. For most folks, this will be an outline that can get you to daycount with some customization work.
 
