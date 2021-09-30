@@ -115,7 +115,7 @@ const desiredTurns: turnsObject = {
     [Test.MUS]: 1,
     [Test.MYS]: 1,
     [Test.MOX]: 1,
-    [Test.ITEM]: 2,
+    [Test.ITEM]: 1,
     [Test.WEAPON]: 60,
     [Test.HOT_RES]: 60,
     [Test.SPELL]: 60,
@@ -338,10 +338,6 @@ function getPizzaIngredients() {
     equip($slot`acc3`, $item`Lil' Doctor™ bag`);
 
     useFamiliar($familiar`Plastic Pirate Skull`); // maxmize scrap drops
-
-    if (!userConfirm('About to being Feel Envy + Chest X-Ray Fights. Continue?')) {
-        throw 'Aborting before Envy + X-Ray fights';
-    }
 
     Macro.skill($skill`Feel Envy`).skill($skill`Chest X-Ray`).setAutoAttack();
     mapMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
@@ -595,7 +591,7 @@ function doFreeFights() {
     // Professor chain off the last back-up
     equip($item`Fourth of May Cosplay Saber`);
     useFamiliar($familiar`Pocket Professor`);
-    // equip($slot`familiar`, $item`Pocket Professor memory chip`);
+    equip($slot`familiar`, $item`Pocket Professor memory chip`);
 
     // if (myFamiliarWeight() < 75) abort('not maxing fam weight');
 
@@ -789,15 +785,15 @@ function doWeaponTest() {
     if (availableAmount($item`LOV Elixir #3`) > 0) ensureEffect($effect`The Power of LOV`);
 
     ensureEffect($effect`Carol of the Bulls`);
-    // ensureEffect($effect`Song of the North`);
-    // ensureEffect($effect`Rage of the Reindeer`);
-    // ensureEffect($effect`Frenzied, Bloody`);
+    ensureEffect($effect`Song of the North`);
+    ensureEffect($effect`Rage of the Reindeer`);
+    ensureEffect($effect`Frenzied, Bloody`);
     // ensureEffect($effect`Scowl of the Auk`);
-    // ensureEffect($effect`Disdain of the War Snapper`);
+    ensureEffect($effect`Disdain of the War Snapper`);
     // ensureEffect($effect`Tenacity of the Snapper`);
     // ensureSong($effect`Jackasses' Symphony of Destruction`);
     ensureEffect($effect`Billiards Belligerence`);
-    // ensureNpcEffect($effect`Engorged Weapon`, 1, $item`Meleegra&trade; pills`); Gnome camp
+    ensureNpcEffect($effect`Engorged Weapon`, 1, $item`Meleegra&trade; pills`); Gnome camp
     ensureEffect($effect`Lack of Body-Building`);
     haveSkill($skill`Bow-Legged Swagger`) && ensureEffect($effect`Bow-Legged Swagger`);
 
@@ -825,7 +821,7 @@ function doWeaponTest() {
 }
 
 function doSpellTest() {
-    // ensureEffect($effect`Simmering`);
+    ensureEffect($effect`Simmering`);
 
     // ensureEffect($effect`Song of Sauce`);
     ensureEffect($effect`AAA-Charged`);
@@ -864,26 +860,26 @@ function doSpellTest() {
 
     // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
     maximize('hot res, 0.01 familiar weight', false);
-    // if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
-    //     if (myMp() < 20) {
-    //         ensureCreateItem(1, $item`magical sausage`);
-    //         eat(1, $item`magical sausage`);
-    //     }
-    //     while (myHp() < myMaxhp()) {
-    //         useSkill(1, $skill`Cannelloni Cocoon`);
-    //     }
-    //     if (myMp() < 100) {
-    //         ensureCreateItem(1, $item`magical sausage`);
-    //         eat(1, $item`magical sausage`);
-    //     }
-    //     if (Math.round(numericModifier('spooky resistance')) < 10) {
-    //         ensureEffect($effect`Does It Have a Skull In There??`);
-    //         if (Math.round(numericModifier('spooky resistance')) < 10) {
-    //             throw 'Not enough spooky res for Deep Dark Visions.';
-    //         }
-    //     }
-    //     useSkill(1, $skill`Deep Dark Visions`);
-    // }
+     if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
+         if (myMp() < 20) {
+             ensureCreateItem(1, $item`magical sausage`);
+             eat(1, $item`magical sausage`);
+         }
+         while (myHp() < myMaxhp()) {
+             useSkill(1, $skill`Cannelloni Cocoon`);
+         }
+         if (myMp() < 100) {
+             ensureCreateItem(1, $item`magical sausage`);
+             eat(1, $item`magical sausage`);
+         }
+         if (Math.round(numericModifier('spooky resistance')) < 10) {
+             ensureEffect($effect`Does It Have a Skull In There??`);
+             if (Math.round(numericModifier('spooky resistance')) < 10) {
+                 throw 'Not enough spooky res for Deep Dark Visions.';
+             }
+         }
+         useSkill(1, $skill`Deep Dark Visions`);
+     }
 
     equip($item`weeping willow wand`);
     equip($slot`acc1`, $item`Powerful Glove`);
@@ -991,9 +987,10 @@ function doNonCombatTest() {
 
     wishEffect($effect`Disquiet Riot`);
 
-    // cliExecute('acquire porkpie-mounted popper');
-    // equip($item`porkpie-mounted popper`);
+    cliExecute('acquire porkpie-mounted popper');
+    equip($item`porkpie-mounted popper`);
     equip($item`fish hatchet`);
+    equip($item`Fourth of May Cosplay Saber`);
     equip($slot`acc2`, $item`hewn moon-rune spoon`);
 
     doTest(Test.NONCOMBAT);
@@ -1066,24 +1063,25 @@ export function main(): void {
     // cliExecute('ccs default');
     // // cliExecute('boombox food');
     // cliExecute('refresh all');
-    //
-    // // Tune moon sign to Wombat (for meat farming).
-    // if (!get('moonTuned')) {
-    //     // Unequip spoon.
-    //     equip($slot`acc1`, $item`Retrospecs`);
-    //     equip($slot`acc2`, $item`Powerful Glove`);
-    //     equip($slot`acc3`, $item`Lil' Doctor™ bag`);
-    //
-    //     // Actually tune the moon.
-    //     visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
-    // }
-    //
-    // putShop(180000, 0, 1, $item`blood-drive sticker`);
-    // putShop(99000, 0, 1, $item`emergency margarita`);
-    // putShop(94000, 0, 1, $item`vintage smart drink`);
-    //
-    // cliExecute('hagnk all');
-    // cliExecute('acquire bitchin meatcar');
+    
+    
+    // Tune moon sign to Wombat (for meat farming).
+    if (!get('moonTuned')) {
+        // Unequip spoon.
+        equip($slot`acc1`, $item`lucky gold ring`);
+        equip($slot`acc2`, $item`Powerful Glove`);
+        equip($slot`acc3`, $item`Lil' Doctor™ bag`);
+        //     // Actually tune the moon.
+        visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
+     }
+    
+    putShop(180000, 0, 1, $item`blood-drive sticker`);
+    putShop(99000, 0, 1, $item`emergency margarita`);
+    putShop(94000, 0, 1, $item`vintage smart drink`);
+    
+    cliExecute('hagnk all');
+   
+    cliExecute('acquire bitchin meatcar');
     // cliExecute('use clockwork maid');
     // buy($item`pocket wish`, 1, 50000);
     // visitUrl('peevpee.php?action=smashstone&confirm=on');
