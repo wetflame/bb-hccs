@@ -115,12 +115,12 @@ const desiredTurns: turnsObject = {
     [Test.MUS]: 1,
     [Test.MYS]: 1,
     [Test.MOX]: 1,
-    [Test.ITEM]: 1,
-    [Test.WEAPON]: 60,
-    [Test.HOT_RES]: 60,
-    [Test.SPELL]: 60,
+    [Test.ITEM]: 5,
+    [Test.WEAPON]: 1,
+    [Test.HOT_RES]: 1,
+    [Test.SPELL]: 32,
     [Test.NONCOMBAT]: 1,
-    [Test.FAMILIAR]: 60,
+    [Test.FAMILIAR]: 36,
     [Test.COIL_WIRE]: 60,
 };
 
@@ -239,7 +239,7 @@ const getBatteries = () => {
 };
 
 function setup() {
-    if (availableAmount($item`blood-faced volleyball`) > 0) return;
+    if (availableAmount($item`Newbiesport™ tent`) === 0) return;
 
     setPropertyInt('bb_ScriptStartCS', gametimeToInt());
 
@@ -248,8 +248,8 @@ function setup() {
     tryUse(1, $item`letter from King Ralph XI`);
     tryUse(1, $item`pork elf goodies sack`);
     autosell(5, $item`baconstone`);
-    autosell(5, $item`porquoise`);
     autosell(5, $item`hamethyst`);
+	autosell(itemAmount($item`porquoise`)-2, $item`porqouise`);
 
     setClan('Old CW\'s Germ Free Clan');
 
@@ -281,20 +281,41 @@ function setup() {
     // Upgrade saber for fam wt
     visitUrl('main.php?action=may4');
     runChoice(4);
+	
+	// get pulls
+	cliExecute('buy using storage 1 borrowed time;');
+    // cliExecute('buy using storage 1 1952 Mickey Mantle card;'); - does the script pull this later?
+	// cliExecute('buy using storage 1 non-Euclidean angle;'); - does the script pull this later?
+	cliExecute('pull 1 snow suit;');
+	cliExecute('pull 1 borrowed time;');
+	cliExecute('Pull 1 staff of simmering hatred;');
+	// cliExecute('pull 1 non-Euclidean angle;'); - does the script pull this later?
+	// cliExecute('pull 1 1952 Mickey Mantle card;'); - does the script pull this later?
 
-    // pull and use borrowed time
-    if (availableAmount($item`borrowed time`) === 0 && !get('_borrowedTimeUsed')) {
-        if (pullIfPossible(1, $item`borrowed time`, 20000)) {
-            use($item`borrowed time`);
-        } else {
-            abort("Couldn't get borrowed time");
-        }
-    }
+	// breakfast
+	cliExecute('breakfast;'); // maybe not needed as batteries and wishes are covered in this script?
 
-    // cliExecute('boombox fists');
+	// calculate the universe
+	cliExecute('numberology 69');
+	
+	// do detective solving
+	cliExecute('detective solver;');
+
+
+
+	// miscellaneous other setup
+	cliExecute('retrocape mysticality thrill');
+    cliExecute('boombox fists');
     cliExecute('mcd 10');
+	cliExecute('cargo 284;');
+	cliExecute('use 1 borrowed time;');
+	cliExecute('use 1 bird-a-day calendar;');
+	cliExecute('use 1 astral six-pack;');
+
 
     ensureItem(1, $item`toy accordion`);
+	ensureItem(1, $item`saucepan`);
+	ensureItem(1, $item`turtle totem`);
 
     // lathe wand
     // visitUrl('shop.php?whichshop=lathe&action=buyitem&quantity=1&whichrow=1162&pwd');
@@ -305,7 +326,15 @@ function setup() {
 
     autosell(1, $item`Newbiesport™ tent`);
 
-    // get clan consults
+	
+	// Vote - weapon damage and familiar experience
+    if (get("_voteModifier") === "") {
+        visitUrl("place.php?whichplace=town_right&action=townright_vote");
+        visitUrl("choice.php?option=1&whichchoice=1331&g=2&local%5B%5D=2&local%5B%5D=3");
+        // Hit up the booth again so mafia correctly tracks the bonuses
+        visitUrl("place.php?whichplace=town_right&action=townright_vote");
+    }
+	
     if (!get('_hccsMinRealTime')) {
         getBatteries();
 
@@ -315,11 +344,7 @@ function setup() {
             cliExecute('genie wish for more wishes');
         }
 
-        // get blood-faced volleyball
-        cliExecute('acquire seal tooth');
-        cliExecute('acquire volleyball');
-        use($item`seal tooth`);
-        use($item`volleyball`);
+
     }
 }
 
@@ -334,16 +359,20 @@ function getPizzaIngredients() {
     equip($item`Cargo Cultist Shorts`);
     equip($item`unwrapped knock-off retro superhero cape`);
     equip($slot`acc1`, $item`Beach Comb`);
-    equip($slot`acc2`, $item`hewn moon-rune spoon`);
+    equip($slot`acc2`, $item`Eight Days a Week Pill Keeper`);
     equip($slot`acc3`, $item`Lil' Doctor™ bag`);
+	equip($item`miniature crystal ball`);
 
     useFamiliar($familiar`Plastic Pirate Skull`); // maxmize scrap drops
+
+    if (!userConfirm('About to being Feel Envy + Chest X-Ray Fights. Continue?')) {
+        throw 'Aborting before Envy + X-Ray fights';
+    }
 
     Macro.skill($skill`Feel Envy`).skill($skill`Chest X-Ray`).setAutoAttack();
     mapMonster($location`The Haunted Pantry`, $monster`possessed can of tomatoes`);
     runCombat();
 
-    if (myMp() > 20) useSkill($skill`Cannelloni Cocoon`);
     mapMonster($location`The Haunted Kitchen`, $monster`possessed silverware drawer`);
     runCombat();
 
@@ -372,7 +401,7 @@ function useStatGains() {
 
     ensureEffect($effect`Inscrutable Gaze`);
     ensureEffect($effect`Thaumodynamic`);
-    ensurePullEffect($effect`Category`, $item`abstraction: category`);
+    // ensurePullEffect($effect`Category`, $item`abstraction: category`);
     ensurePullEffect($effect`Different Way of Seeing Things`, $item`non-Euclidean angle`);
 
     equip($item`familiar scrapbook`); // make use of exp boosts
@@ -397,10 +426,10 @@ function useStatGains() {
 function buffBeforeGoblins() {
     // MAL pizza
     if (!haveEffect($effect`Mallowed Out`)) {
-        // pull giant pearl to ensure 100 turns
-        if (availableAmount($item`giant pearl`) === 0 && !haveEffect($effect`Mallowed Out`)) {
-            if (!pullIfPossible(1, $item`giant pearl`, 24000)) {
-                abort("Couldn't get giant pearl");
+        // pull 1952 Mickey Mantle Card to ensure 100 turns
+        if (availableAmount($item`1952 Mickey Mantle Card`) === 0 && !haveEffect($effect`Mallowed Out`)) {
+            if (!pullIfPossible(1, $item`1952 Mickey Mantle Card`, 24000)) {
+                abort("Couldn't get 1952 Mickey Mantle Card");
             }
         }
 
@@ -409,7 +438,7 @@ function buffBeforeGoblins() {
             $item`magical ice cubes`,
             $item`antique packet of ketchup`,
             $item`little paper umbrella`,
-            $item`giant pearl`
+            $item`1952 Mickey Mantle Card`
         );
     }
 
@@ -436,7 +465,6 @@ function buffBeforeGoblins() {
     ensureEffect($effect`Uncucumbered`); // boxing daycare
     ensureSong($effect`The Magical Mojomuscular Melody`);
     ensureNpcEffect($effect`Glittering Eyelashes`, 5, $item`glittery mascara`);
-    ensureEffect($effect`Hulkien`);
     ensureEffect($effect`Lapdog`);
 
     // Plan is for these buffs to fall all the way through to item -> hot res -> fam weight.
@@ -474,7 +502,7 @@ function buffBeforeGoblins() {
         }
     }
 
-    ensureEffect($effect`Blessing of your favorite Bird`); // Should be 75% myst for now.
+    // ensureEffect($effect`Blessing of your favorite Bird`); // Should be 75% myst for now.
     ensureSong($effect`Polka of Plenty`);
     // ensureEffect($effect`Song of Bravado`);
 }
@@ -492,7 +520,7 @@ function doFreeFights() {
     equip($slot`acc3`, $item`backup camera`);
 
     useFamiliar($familiar`Hovering Sombrero`);
-    // equip($slot`familiar`, $item`miniature crystal ball`);
+    equip($slot`familiar`, $item`miniature crystal ball`);
 
     // Get buff things
     ensureSewerItem(1, $item`turtle totem`);
@@ -591,7 +619,7 @@ function doFreeFights() {
     // Professor chain off the last back-up
     equip($item`Fourth of May Cosplay Saber`);
     useFamiliar($familiar`Pocket Professor`);
-    equip($slot`familiar`, $item`Pocket Professor memory chip`);
+    // equip($slot`familiar`, $item`Pocket Professor memory chip`);
 
     // if (myFamiliarWeight() < 75) abort('not maxing fam weight');
 
@@ -785,15 +813,15 @@ function doWeaponTest() {
     if (availableAmount($item`LOV Elixir #3`) > 0) ensureEffect($effect`The Power of LOV`);
 
     ensureEffect($effect`Carol of the Bulls`);
-    ensureEffect($effect`Song of the North`);
-    ensureEffect($effect`Rage of the Reindeer`);
-    ensureEffect($effect`Frenzied, Bloody`);
+    // ensureEffect($effect`Song of the North`);
+    // ensureEffect($effect`Rage of the Reindeer`);
+    // ensureEffect($effect`Frenzied, Bloody`);
     // ensureEffect($effect`Scowl of the Auk`);
-    ensureEffect($effect`Disdain of the War Snapper`);
+    // ensureEffect($effect`Disdain of the War Snapper`);
     // ensureEffect($effect`Tenacity of the Snapper`);
     // ensureSong($effect`Jackasses' Symphony of Destruction`);
     ensureEffect($effect`Billiards Belligerence`);
-    ensureNpcEffect($effect`Engorged Weapon`, 1, $item`Meleegra&trade; pills`); Gnome camp
+    // ensureNpcEffect($effect`Engorged Weapon`, 1, $item`Meleegra&trade; pills`); Gnome camp
     ensureEffect($effect`Lack of Body-Building`);
     haveSkill($skill`Bow-Legged Swagger`) && ensureEffect($effect`Bow-Legged Swagger`);
 
@@ -821,7 +849,7 @@ function doWeaponTest() {
 }
 
 function doSpellTest() {
-    ensureEffect($effect`Simmering`);
+    // ensureEffect($effect`Simmering`);
 
     // ensureEffect($effect`Song of Sauce`);
     ensureEffect($effect`AAA-Charged`);
@@ -860,26 +888,26 @@ function doSpellTest() {
 
     // Mafia sometimes can't figure out that multiple +weight things would get us to next tier.
     maximize('hot res, 0.01 familiar weight', false);
-     if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
-         if (myMp() < 20) {
-             ensureCreateItem(1, $item`magical sausage`);
-             eat(1, $item`magical sausage`);
-         }
-         while (myHp() < myMaxhp()) {
-             useSkill(1, $skill`Cannelloni Cocoon`);
-         }
-         if (myMp() < 100) {
-             ensureCreateItem(1, $item`magical sausage`);
-             eat(1, $item`magical sausage`);
-         }
-         if (Math.round(numericModifier('spooky resistance')) < 10) {
-             ensureEffect($effect`Does It Have a Skull In There??`);
-             if (Math.round(numericModifier('spooky resistance')) < 10) {
-                 throw 'Not enough spooky res for Deep Dark Visions.';
-             }
-         }
-         useSkill(1, $skill`Deep Dark Visions`);
-     }
+    // if (haveEffect($effect`Visions of the Deep Dark Deeps`) < 50) {
+    //     if (myMp() < 20) {
+    //         ensureCreateItem(1, $item`magical sausage`);
+    //         eat(1, $item`magical sausage`);
+    //     }
+    //     while (myHp() < myMaxhp()) {
+    //         useSkill(1, $skill`Cannelloni Cocoon`);
+    //     }
+    //     if (myMp() < 100) {
+    //         ensureCreateItem(1, $item`magical sausage`);
+    //         eat(1, $item`magical sausage`);
+    //     }
+    //     if (Math.round(numericModifier('spooky resistance')) < 10) {
+    //         ensureEffect($effect`Does It Have a Skull In There??`);
+    //         if (Math.round(numericModifier('spooky resistance')) < 10) {
+    //             throw 'Not enough spooky res for Deep Dark Visions.';
+    //         }
+    //     }
+    //     useSkill(1, $skill`Deep Dark Visions`);
+    // }
 
     equip($item`weeping willow wand`);
     equip($slot`acc1`, $item`Powerful Glove`);
@@ -987,10 +1015,9 @@ function doNonCombatTest() {
 
     wishEffect($effect`Disquiet Riot`);
 
-    cliExecute('acquire porkpie-mounted popper');
-    equip($item`porkpie-mounted popper`);
+    // cliExecute('acquire porkpie-mounted popper');
+    // equip($item`porkpie-mounted popper`);
     equip($item`fish hatchet`);
-    equip($item`Fourth of May Cosplay Saber`);
     equip($slot`acc2`, $item`hewn moon-rune spoon`);
 
     doTest(Test.NONCOMBAT);
@@ -1063,25 +1090,24 @@ export function main(): void {
     // cliExecute('ccs default');
     // // cliExecute('boombox food');
     // cliExecute('refresh all');
-    
-    
-    // Tune moon sign to Wombat (for meat farming).
-    if (!get('moonTuned')) {
-        // Unequip spoon.
-        equip($slot`acc1`, $item`lucky gold ring`);
-        equip($slot`acc2`, $item`Powerful Glove`);
-        equip($slot`acc3`, $item`Lil' Doctor™ bag`);
-        //     // Actually tune the moon.
-        visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
-     }
-    
-    putShop(180000, 0, 1, $item`blood-drive sticker`);
-    putShop(99000, 0, 1, $item`emergency margarita`);
-    putShop(94000, 0, 1, $item`vintage smart drink`);
-    
-    cliExecute('hagnk all');
-   
-    cliExecute('acquire bitchin meatcar');
+    //
+    // // Tune moon sign to Wombat (for meat farming).
+    // if (!get('moonTuned')) {
+    //     // Unequip spoon.
+    //     equip($slot`acc1`, $item`Retrospecs`);
+    //     equip($slot`acc2`, $item`Powerful Glove`);
+    //     equip($slot`acc3`, $item`Lil' Doctor™ bag`);
+    //
+    //     // Actually tune the moon.
+    //     visitUrl('inv_use.php?whichitem=10254&doit=96&whichsign=7');
+    // }
+    //
+    // putShop(180000, 0, 1, $item`blood-drive sticker`);
+    // putShop(99000, 0, 1, $item`emergency margarita`);
+    // putShop(94000, 0, 1, $item`vintage smart drink`);
+    //
+    // cliExecute('hagnk all');
+    // cliExecute('acquire bitchin meatcar');
     // cliExecute('use clockwork maid');
     // buy($item`pocket wish`, 1, 50000);
     // visitUrl('peevpee.php?action=smashstone&confirm=on');
